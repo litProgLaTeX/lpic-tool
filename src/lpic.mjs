@@ -19,7 +19,7 @@ cliArgs
 Config.addCliArgs(cliArgs) ;
 
 cliArgs
-.arguments('[path]', 'The document to parse while tracing scopes, actions and structures')
+.arguments('[path]', 'The document to parse')
 
 cliArgs.parse();
 
@@ -67,5 +67,11 @@ try {
   process.exit(1)
 }
 
-console.log(yaml.stringify(cliArgs.opts()))
-console.log(yaml.stringify(cliArgs.args))
+if (cliArgs.args.length < 1) {
+  console.log("No document specified to parse")
+  process.exit(0)
+}
+
+cliArgs.args.forEach(async function(aDocPath){
+  await Grammars.parse(aDocPath)
+})
