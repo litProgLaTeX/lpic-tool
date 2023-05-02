@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# This bash script uses the current working directory to create a simple
+# script to run the lpic command anywhere in a user's
+# workspace.
+
+cmdScript=$(pwd)/src/lpic.mjs
+
+cat << CMD_SCRIPT > $HOME/.local/bin/lpic
+#!/bin/sh
+
+# This shell script was created by the lpic tool
+#       './scripts/installEditableLPiCCommand'
+# script.
+
+exec node $cmdScript \$@
+CMD_SCRIPT
+
+chmod a+x $HOME/.local/bin/lpic
+
+echo ""
+echo "Editable lpic command has been created"
+echo ""

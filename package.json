@@ -1,0 +1,34 @@
+{
+  "name": "lpic-tool",
+  "version": "0.0.1",
+  "description": "A javascript tool to extract and build code from Literate Programming in ConTeXt documents",
+  "main": "src/lpic.mjs",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/litProgConTeXt/lpic-tool.git"
+  },
+  "keywords": [
+    "Literate",
+    "Programming",
+    "ConTeXt"
+  ],
+  "author": "Stephen Gaito",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/litProgConTeXt/lpic-tool/issues"
+  },
+  "homepage": "https://github.com/litProgConTeXt/lpic-tool#readme",
+  "dependencies": {
+    "@ltd/j-toml": "^1.38.0",
+    "commander": "^10.0.1",
+    "deepcopy": "^2.1.0",
+    "deepmerge-ts": "^5.1.0",
+    "lpic-syntaxes": "github:litProgConTeXt/lpic-syntaxes",
+    "tmgrammars": "github:litProgConTeXt/tmGrammars",
+    "yaml": "^2.2.1"
+  }
+}
