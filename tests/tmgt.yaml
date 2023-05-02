@@ -1,0 +1,45 @@
+loadActions:
+  - ~/GitTools/lpic/lpic-tool/src/contextActions
+  #- ~/GitTools/lpic/lpic-tool/src/lpicActions
+loadGrammar:
+  - ~/GitTools/lpic/lpic-syntaxes/lpicSyntaxes/context.tmLanguage.json
+  - ~/GitTools/lpic/lpic-syntaxes/lpicSyntaxes/lpic.tmLanguage.json
+traceLines:
+  name: traceLines
+  include:
+    - component
+    - starttext
+    - stoptext
+  exclude: []
+traceActions:
+  name: traceActions
+  loaded:
+    - meta.context.starttext
+    - source.ansic.header
+    - source.c.lpic
+  include: []
+  exclude: []
+traceScopes:
+  name: traceScopes
+  loaded:
+    - keyword.control.document.starttext.context
+    - keyword.control.document.stoptext.context
+    - keyword.control.structure.context
+    - keyword.control.structure.start.context
+    - keyword.control.structure.stop.context
+    - meta.document
+    - meta.document.block.context
+    - meta.structure
+    - meta.structure.block.context
+    - meta.structure.name.context
+    - source.c.lpic
+    - source.context
+    - source.lpic
+    - text.tex.command.lpic
+  include: []
+  exclude: []
+traceStructures:
+  name: traceStructures
+  loaded: []
+  include: []
+  exclude: []

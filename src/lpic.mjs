@@ -16,7 +16,7 @@ cliArgs
   .description('A tool to extract and build code from Literate Programming in ConTeXt documents.')
   .version('0.0.1')
 
-Config.addCliArgs(cliArgs) ;
+Config.addCliArgs(cliArgs, 'lpic') ;
 
 cliArgs
 .arguments('[path]', 'The document to parse')
@@ -25,7 +25,7 @@ cliArgs.parse();
 
 var config = {}
 try {
-  config = await Config.loadConfig(cliArgs, {
+  config = await Config.loadConfig(cliArgs, 'lpic', {
     ignoreConfig: True
   }, {
     preLoadFunc: function(config) {
