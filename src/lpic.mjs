@@ -72,6 +72,8 @@ if (cliArgs.args.length < 1) {
   process.exit(0)
 }
 
+ScopeActions.runInitializingActions('lpic', [])
 cliArgs.args.forEach(async function(aDocPath){
   await Grammars.parse(aDocPath)
 })
+ScopeActions.runFinalizingActions('lpic', [])

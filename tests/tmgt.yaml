@@ -1,6 +1,5 @@
 loadActions:
-  - ~/GitTools/lpic/lpic-tool/src/contextActions
-  #- ~/GitTools/lpic/lpic-tool/src/lpicActions
+  - ~/GitTools/lpic/lpic-tool/src/actions
 loadGrammar:
   - ~/GitTools/lpic/lpic-syntaxes/lpicSyntaxes/context.tmLanguage.json
   - ~/GitTools/lpic/lpic-syntaxes/lpicSyntaxes/lpic.tmLanguage.json
