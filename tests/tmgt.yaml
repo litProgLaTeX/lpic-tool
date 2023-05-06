@@ -5,6 +5,7 @@ loadGrammar:
   - ~/GitTools/lpic/lpic-syntaxes/lpicSyntaxes/lpic.tmLanguage.json
 traceLines:
   name: traceLines
+#  include: []
   include:
     - component
     - starttext

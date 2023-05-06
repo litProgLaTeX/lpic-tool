@@ -27,12 +27,14 @@ export function registerActions(ScopeActions, Grammars, Structures, config) {
   ScopeActions.addScopedAction(
     'initialize.control.structure.context',
     import.meta.url,
-    async function(thisScope, theScope, theTokens) {
+    async function(thisScope, theScope, theTokens, theLine, theDoc) {
       console.log("----------------------------------------------------------")
       console.log("initializeComponents")
       console.log(`thisScope: ${thisScope}`)
       console.log(` theScope: ${theScope}`)
       console.log(`theTokens: ${theTokens}`)
+      //console.log(`  theLine: ${theLine}`)
+      //console.log(`   theDoc: ${theDoc.docName}`)
       console.log("----------------------------------------------------------")  
     }
   )
@@ -40,12 +42,14 @@ export function registerActions(ScopeActions, Grammars, Structures, config) {
   ScopeActions.addScopedAction(
     'run.load.components.context',
     import.meta.url,
-    async function(thisScope, theScope, theTokens) {
+    async function(thisScope, theScope, theTokens, theLine, theDoc) {
       console.log("----------------------------------------------------------")
       console.log("runComponent")
       console.log(`thisScope: ${thisScope}`)
       console.log(` theScope: ${theScope}`)
       console.log(`theTokens: ${theTokens}`)
+      //console.log(`  theLine: ${theLine}`)
+      //console.log(`   theDoc: ${theDoc.docName}`)
       console.log("----------------------------------------------------------")
       const components = Structures.getStructure('components')
       for (const aDocPath of theTokens) {
@@ -66,7 +70,7 @@ export function registerActions(ScopeActions, Grammars, Structures, config) {
   ScopeActions.addScopedAction(
     'keyword.control.structure.context',
     import.meta.url,
-    async function(thisScope, theScope, theTokens) {
+    async function(thisScope, theScope, theTokens, theLine, theDoc) {
       const components = Structures.getStructure('components')
       components.pending(theTokens[1]+'.tex')
       console.log("----------------------------------------------------------")
@@ -74,6 +78,8 @@ export function registerActions(ScopeActions, Grammars, Structures, config) {
       console.log(`thisScope: ${thisScope}`)
       console.log(` theScope: ${theScope}`)
       console.log(`theTokens: ${theTokens}`)
+      console.log(`  theLine: ${theLine}`)
+      console.log(`   theDoc: ${theDoc.docName}`)
       console.log("----------------------------------------------------------")
     }
   )
@@ -81,13 +87,15 @@ export function registerActions(ScopeActions, Grammars, Structures, config) {
   ScopeActions.addScopedAction(
     'finalize.control.structure.context',
     import.meta.url,
-    async function(thisScope, theScope, theTokens) {
+    async function(thisScope, theScope, theTokens, theLine, theDoc) {
       console.log("----------------------------------------------------------")
       console.log("finalizeComponents")
       console.log(`thisScope: ${thisScope}`)
       console.log(` theScope: ${theScope}`)
       console.log(`theTokens: ${theTokens}`)
-      console.log("----------------------------------------------------------") 
+      //console.log(`  theLine: ${theLine}`)
+      //console.log(`   theDoc: ${theDoc.docName}`)
+     console.log("----------------------------------------------------------") 
     } 
   )
 
