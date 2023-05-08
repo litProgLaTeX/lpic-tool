@@ -10,6 +10,7 @@ traceLines:
     - component
     - starttext
     - stoptext
+    - CCode
   exclude: []
 traceActions:
   name: traceActions
