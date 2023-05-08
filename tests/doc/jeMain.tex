@@ -1,6 +1,6 @@
 %% lpic
 
-\begintext
+\starttext
 
 \startCCode
 #include <memory>
@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
   interpreter_ptr interpreter = interpreter_ptr(new jsonEcho::JsonEcho());
 
   xeus::xkernel kernel(
-    config, xeus::get_user_name(), 
+    config, xeus::get_user_name(),
     std::move(context), std::move(interpreter),
     xeus::make_xserver_zmq
   );
@@ -31,4 +31,4 @@ int main(int argc, char* argv[]) {
 }
 \stopCCode
 
-\endtext
+\stoptext
