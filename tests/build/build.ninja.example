@@ -3,6 +3,8 @@
 ###########################################################################
 # build the pdf
 
+# see: https://wiki.contextgarden.net/Running_ConTeXt
+
 rule context
   command = context --path=../doc $in
 
