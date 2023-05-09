@@ -20,7 +20,7 @@ class Components {
   }
 }
 
-export function registerActions(ScopeActions, Grammars, Structures, config) {
+export function registerActions(config, Builders, Grammars, ScopeActions, Structures) {
 
   Structures.newStructure('components', new Components())
 

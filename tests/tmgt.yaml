@@ -3,14 +3,18 @@ loadActions:
 loadGrammar:
   - ~/GitTools/lpic/lpic-syntaxes/lpicSyntaxes/context.tmLanguage.json
   - ~/GitTools/lpic/lpic-syntaxes/lpicSyntaxes/lpic.tmLanguage.json
+loadBuilders:
+  - ~/GitTools/lpic/lpic-tool/src/builders
 traceLines:
   name: traceLines
 #  include: []
   include:
-    - component
-    - starttext
-    - stoptext
-    - CCode
+    #- component
+    #- starttext
+    #- stoptext
+    #- CCode
+    - build
+    - requires
   exclude: []
 traceActions:
   name: traceActions

@@ -3,10 +3,12 @@
 ###########################################################################
 # build the pdf
 
-rule context
-  command = context --path=../doc $in
+# see: https://wiki.contextgarden.net/Running_ConTeXt
 
-build jsonEcho.pdf : context ../doc/jsonEcho.tex
+rule context
+  command = context --path=.. $in
+
+build jsonEcho.pdf : context ../jsonEcho.tex
 
 ###########################################################################
 # generate the code files

@@ -28,7 +28,7 @@
     "deepcopy": "^2.1.0",
     "deepmerge-ts": "^5.1.0",
     "lpic-syntaxes": "github:litProgConTeXt/lpic-syntaxes",
-    "tmgrammars": "github:litProgConTeXt/tmGrammars",
+    "lpic-modules": "github:litProgConTeXt/lpic-modules",
     "yaml": "^2.2.1"
   }
 }

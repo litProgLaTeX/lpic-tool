@@ -1,0 +1,44 @@
+%% lpic
+
+\usemodule[t-litprog]
+
+\starttext
+
+This small project wraps the JsonEchoKernel C++ code into a Litterate
+Programming in ConTeXt document.
+
+see: lpic-langServer/test/ansic/build.ninja
+
+\component jeClass
+
+\component jeMain
+
+To build this we need:
+
+\startDecsription{jsonEcho}{cProgram}
+  \output{jsonEcho}
+  \requires{cObj}{jeClass}
+  \requires{cObj}{jeMain}
+  \requires{cHeader}{xeus/xkernel.hpp}
+  \requires{cHeader}{xeus/xkernel_configuration.hpp}
+  \requires{cHeader}{xeus-zmq/xserver_zmq.hpp}
+  \requires{cLib}{xeus-zmq.a}
+  \requires{cLib}{xeus.a}
+  \requires{cLib}{zmq.a}
+  \requires{cLib}{crypto}
+  \requires{cLib}{sodium}
+  \requires{cLib}{uuid}
+\stopDescription
+
+\startDescription{jeMain}{cObj}
+  \requires{cHeader}{jeClass}
+\stopDescription
+
+\startDescription{jeClass}{cObj}
+  \requires{cHeader}{jeClass.h}
+  \requires{cHeader}{xtl/xhash.hpp}
+  \requires{cHeader}{nlohmann/json.hpp}
+  \requires{cHeader}{cppzmq}
+\stopDescription
+
+\stoptext

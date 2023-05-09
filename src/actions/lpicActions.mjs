@@ -1,6 +1,24 @@
 
 import yaml from "yaml"
 
+class BuildArtifact {
+  constructor(artifactName, buildType) {
+    this.name = artifactName
+    this.type = buildType
+  }
+
+}
+
+class BuildReqs {
+
+  buildInfo = {}
+
+  addBuildArtifact(buildName, buildType) {
+    if (!this.buildInfo[buildType]) this.buildInfo[buildType] = {}
+    this.buildInfo[buildType][buildName] = new BuildArtifact(buildName, buildType)
+  }
+}
+
 class CodeChunk {
   constructor(startLine, stopLine, theLines, docName) {
     this.startLine = startLine
@@ -43,9 +61,10 @@ class CodeChunks {
 
 }
 
-export function registerActions(ScopeActions, Grammars, Structures, config) {
+export function registerActions(config, Builders, Grammars, ScopeActions, Structures) {
 
   Structures.newStructure('code', new CodeChunks())
+  Structures.newStructure('build', new BuildReqs())
 
   function getCodeType(aScope) {
     return aScope.split('.')[4]
@@ -114,4 +133,42 @@ export function registerActions(ScopeActions, Grammars, Structures, config) {
      }
     }
   )
+
+  ScopeActions.addScopedAction(
+    'keyword.control.build.lpic',
+    import.meta.url,
+    async function(thisScope, theScope, theTokens, theLine, theDoc) {
+      console.log("----------------------------------------------------------")
+      console.log("build")
+      console.log(`thisScope: ${thisScope}`)
+      console.log(` theScope: ${theScope}`)
+      console.log(`theTokens: ${theTokens}`)
+      console.log(`  theLine: ${theLine}`)
+      console.log(`   theDoc: ${theDoc.docName}`)
+     console.log("----------------------------------------------------------")
+     const buildName = theTokens[1]
+     const buildType = theTokens[3]
+     const buildInfo = Structures.getStructure('build')
+     buildInfo.addBuildArtifact(buildName, buildType)
+    }
+  )
+
+  ScopeActions.addScopedAction(
+    'keyword.control.requires.lpic',
+    import.meta.url,
+    async function(thisScope, theScope, theTokens, theLine, theDoc) {
+      console.log("----------------------------------------------------------")
+      console.log("requires")
+      console.log(`thisScope: ${thisScope}`)
+      console.log(` theScope: ${theScope}`)
+      console.log(`theTokens: ${theTokens}`)
+      console.log(`  theLine: ${theLine}`)
+      console.log(`   theDoc: ${theDoc.docName}`)
+     console.log("----------------------------------------------------------")
+     const buildName = theTokens[1]
+     const reqType   = theTokens[3]
+     const reqName   = theTokens[5]
+    }
+  )
+
 }
