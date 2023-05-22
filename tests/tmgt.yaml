@@ -1,3 +1,4 @@
+cfdoitConfig: cfdoit.toml
 loadActions:
   - ~/GitTools/lpic/lpic-tool/src/actions
 loadGrammar:
