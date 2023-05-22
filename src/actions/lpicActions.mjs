@@ -154,6 +154,36 @@ export function registerActions(config, Builders, Grammars, ScopeActions, Struct
   )
 
   ScopeActions.addScopedAction(
+    'keyword.control.description.start.lpic',
+    import.meta.url,
+    async function(thisScope, theScope, theTokens, theLine, theDoc) {
+      console.log("----------------------------------------------------------")
+      console.log("description-start")
+      console.log(`thisScope: ${thisScope}`)
+      console.log(` theScope: ${theScope}`)
+      console.log(`theTokens: ${theTokens}`)
+      console.log(`  theLine: ${theLine}`)
+      console.log(`   theDoc: ${theDoc.docName}`)
+     console.log("----------------------------------------------------------")      
+    }
+  )
+
+  ScopeActions.addScopedAction(
+    'keyword.control.description.stop.lpic',
+    import.meta.url,
+    async function(thisScope, theScope, theTokens, theLine, theDoc) {
+      console.log("----------------------------------------------------------")
+      console.log("description-stop")
+      console.log(`thisScope: ${thisScope}`)
+      console.log(` theScope: ${theScope}`)
+      console.log(`theTokens: ${theTokens}`)
+      console.log(`  theLine: ${theLine}`)
+      console.log(`   theDoc: ${theDoc.docName}`)
+     console.log("----------------------------------------------------------")      
+    }
+  )
+
+  ScopeActions.addScopedAction(
     'keyword.control.requires.lpic',
     import.meta.url,
     async function(thisScope, theScope, theTokens, theLine, theDoc) {
@@ -167,7 +197,6 @@ export function registerActions(config, Builders, Grammars, ScopeActions, Struct
      console.log("----------------------------------------------------------")
      const buildName = theTokens[1]
      const reqType   = theTokens[3]
-     const reqName   = theTokens[5]
     }
   )
 

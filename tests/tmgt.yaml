@@ -8,13 +8,9 @@ loadBuilders:
   - ~/GitTools/lpic/lpic-tool/src/builders
 traceLines:
   name: traceLines
-#  include: []
   include:
-    #- component
-    #- starttext
-    #- stoptext
-    #- CCode
-    - build
+    - startDescription
+    - stopDescription
     - requires
   exclude: []
 traceActions:
