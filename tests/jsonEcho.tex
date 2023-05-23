@@ -16,7 +16,7 @@ see: lpic-langServer/test/ansic/build.ninja
 To build this we need:
 
 \startDescription{jsonEchoKernel}{gppInstallCommand}
-  \output{jsonEchoKernel}
+  \creates{application}{jsonEchoKernel}
 
   \requires{cObj}{jeClass}
   \requires{cObj}{jeMain}
@@ -36,20 +36,20 @@ To build this we need:
 \stopDescription
   
 \startDescription{jeMain}{gppCompile}
-  \output{jeMain.cpp}
+  \creates{cObj}{jeMain.o}
 
   \requires{srcInclude}{jeClass.hpp}
 
   \requires{package}{xeus}
-  \requires{cHeader}{xeus/xkernel.hpp}
-  \requires{cHeader}{xeus/xkernel_configuration.hpp}
+  \requires{pkgHeader}{xeus/xkernel.hpp}
+  \requires{pkgHeader}{xeus/xkernel_configuration.hpp}
 
   \requires{package}{xeus-zmq}
-  \requires{cHeader}{xeus-zmq/xserver_zmq.hpp}
+  \requires{pkgHeader}{xeus-zmq/xserver_zmq.hpp}
 \stopDescription
   
 \startDescription{jeClass}{gppCompile}
-  \output{jeClass.cpp}
+  \creates{cObj}{jeClass.o}
 
   \requires{srcHeader}{jeClass.hpp}
 
@@ -60,8 +60,8 @@ To build this we need:
   \requires{pkgHeader}{nlohmann/json.hpp}
 
   \requires{package}{xeus}
-  \requires{cHeader}{xeus/xinterpreter.hpp}
-  \requires{cHeader}{xeus/xhelper.hpp}
+  \requires{pkgHeader}{xeus/xinterpreter.hpp}
+  \requires{pkgHeader}{xeus/xhelper.hpp}
 \stopDescription
 
 \stoptext

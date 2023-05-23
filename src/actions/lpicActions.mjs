@@ -1,21 +1,94 @@
 
 import yaml from "yaml"
 
+class Requirement {
+  constructor(objType, objName) {
+    this.objType = objType
+    this.objName = objName
+  }
+}
+
+class Creation {
+  constructor(objType, objName) {
+    this.objType = objType
+    this.objName = objName
+  }
+}
+
 class BuildArtifact {
   constructor(artifactName, buildType) {
-    this.name = artifactName
-    this.type = buildType
+    this.name         = artifactName
+    this.type         = buildType
+    this.requirements = []
+    this.creations    = []
   }
 
+  addRequirement(objType, objName) {
+    this.requirements.push(new Requirement(objType, objName))
+  }
+
+  addCreation(objType, objName) {
+    this.creations.push(new Creation(objType, objName))
+  }
 }
 
 class BuildReqs {
 
   buildInfo = {}
 
-  addBuildArtifact(buildName, buildType) {
-    if (!this.buildInfo[buildType]) this.buildInfo[buildType] = {}
-    this.buildInfo[buildType][buildName] = new BuildArtifact(buildName, buildType)
+  // We place `docName` as the base index to reduce the rare chance of race
+  // conditions when working asynchronously
+  //
+
+  _getBuildInfo(docName) {
+    if (!this.buildInfo[docName]) this.buildInfo[docName] = {}
+    if (!this.buildInfo[docName]['artifacts']) this.buildInfo[docName]['artifacts'] = []
+    return this.buildInfo[docName]
+  }
+
+  startBuildArtifact(docName, buildName, buildType) {
+    const theInfo = this._getBuildInfo(docName)
+    if (theInfo['curDesc']) {
+      const aDesc = theInfo['curDesc']
+      theInfo['artifacts'].push(aDesc)
+    }
+    theInfo['curDesc'] = new BuildArtifact(buildName, buildType)
+  }
+
+  stopBuildArtifact(docName, lineNumber) {
+    const theInfo = this._getBuildInfo(docName)
+    if (!theInfo['curDesc']) {
+      console.log(`WARNING: no start of the current artifact build description in ${docName}`)
+      console.log(`  ... ignoring the artifact which ends at ${lineNumber}!`)
+      return
+    }
+    const aDesc = theInfo['curDesc']
+    theInfo['artifacts'].push(aDesc)
+    delete theInfo['curDesc']
+  }
+
+  addBuildRequirement(docName, objType, objName, lineNumber) {
+    const theInfo = this._getBuildInfo(docName)
+    if (!theInfo['curDesc']) {
+      console.log(`WARNING: no start of the current artifact build description in ${docName}`)
+      console.log(`  ... ignoring the requirement at ${lineNumber}!`)
+      return
+    }
+    theInfo['curDesc'].addRequirement(objType, objName)
+  }
+
+  addBuildCreation(docName, objType, objName, lineNumber) {
+    const theInfo = this._getBuildInfo(docName)
+    if (!theInfo['curDesc']) {
+      console.log(`WARNING: no start of the current artifact build description in ${docName}`)
+      console.log(`  ... ignoring the creation at ${lineNumber}!`)
+      return
+    }
+    theInfo['curDesc'].addCreation(objType, objName)
+  }
+
+  finalize() {
+    console.log(yaml.stringify(this))
   }
 }
 
@@ -31,34 +104,65 @@ class CodeChunk {
 class CodeChunks {
   chunks = {}
 
-  startCodeFor(docName, codeType, lineNumber) {
-    if (!this.chunks[codeType]) this.chunks[codeType] = {}
-    if (!this.chunks[codeType][docName]) this.chunks[codeType][docName] = {}
-    this.chunks[codeType][docName]['start'] = lineNumber
+  // We place `docName` as the base index to reduce the rare chance of race
+  // conditions when working asynchronously
+  //
+  _getCodeFor(docName, codeType) {
+    if (!this.chunks[docName]) this.chunks[docName] = {}
+    const docCode = this.chunks[docName]
+    if (!docCode[codeType]) docCode[codeType] = {}
+    return docCode[codeType]
+  }
+
+  startCodeFor(docName, codeType, codeName, lineNumber) {
+    const theCode = this._getCodeFor(docName, codeType)
+    theCode['codeName'] = codeName
+    theCode['start']    = lineNumber
   }
 
   stopCodeFor(docName, codeType, lineNumber, docLines) {
-    if (!this.chunks[codeType]) this.chunks[codeType] = {}
-    if (!this.chunks[codeType][docName]) this.chunks[codeType][docName] = {}
-    const theCode = this.chunks[codeType][docName]
+    const theCode = this._getCodeFor(docName, codeType)
+
     if (!theCode['start']) {
       console.log(`WARNING: no start of ${codeType} in ${docName}`)
       console.log(`  ... ignoring the chunk that ends at ${lineNumber}!`)
+      delete theCode['start']
+      delete theCode['codeName']
       return
     }
+    const codeName  = theCode['codeName']
     const startLine = theCode['start']
     const stopLine  = lineNumber
     if (stopLine <= startLine) {
       console.log(`WARNING: no ${codeType} found between ${startLine} and ${stopLine} in ${docName}`)
       console.log("  ... ignoring this chuck!")
+      delete theCode['start']
+      delete theCode['codeName']
       return
     }
-    if (!theCode['chunks']) theCode['chunks'] = []
-    theCode['chunks'].push(new CodeChunk(
+    if (!theCode[codeName]) theCode[codeName] = {}
+    if (!theCode[codeName]['chunks']) theCode[codeName]['chunks'] = []
+    theCode[codeName]['chunks'].push(new CodeChunk(
       startLine, stopLine, docLines.slice(startLine+1, stopLine), docName
     ))
+    delete theCode['start']
+    delete theCode['codeName']
   }
 
+  finalize() {
+    for (const aDocName in this.chunks) {
+      for (const aCodeType in this.chunks[aDocName]) {
+        console.log(aDocName)
+        console.log(aCodeType)
+        for (const aCodeName in this.chunks[aDocName][aCodeType]) {
+          const chunks = this.chunks[aDocName][aCodeType][aCodeName]['chunks']
+          for (const aChunk of chunks) {
+            console.log(yaml.stringify(aChunk))
+          }
+        }
+      }
+    }    
+  }
 }
 
 export function registerActions(config, Builders, Grammars, ScopeActions, Structures) {
@@ -75,17 +179,19 @@ export function registerActions(config, Builders, Grammars, ScopeActions, Struct
     import.meta.url,
     async function(thisScope, theScope, theTokens, theLine, theDoc) {
       const codeType = theTokens[1]
+      const codeName = theTokens[3]
       console.log("----------------------------------------------------------")
       console.log("startCode")
       console.log(`thisScope: ${thisScope}`)
       console.log(` theScope: ${theScope}`)
       console.log(` codeType: ${codeType}`)
+      console.log(` codeName: ${codeName}`)
       console.log(`theTokens: ${theTokens}`)
       console.log(`  theLine: ${theLine}`)
       console.log(`   theDoc: ${theDoc.docName}`)
      console.log("----------------------------------------------------------")
      const code = Structures.getStructure('code')
-     code.startCodeFor(theDoc.docName, codeType, theLine)
+     code.startCodeFor(theDoc.docName, codeType, codeName, theLine)
     }
   )
 
@@ -119,37 +225,9 @@ export function registerActions(config, Builders, Grammars, ScopeActions, Struct
       console.log(`theTokens: ${theTokens}`)
       //console.log(`  theLine: ${theLine}`)
       //console.log(`   theDoc: ${theDoc.docName}`)
-     console.log("----------------------------------------------------------")
-     const code = Structures.getStructure('code')
-     for (const aCodeType in code.chunks) {
-      for (const aDocName in code.chunks[aCodeType]) {
-        console.log(aCodeType)
-        console.log(aDocName)
-        const chunks = code.chunks[aCodeType][aDocName]['chunks']
-        for (const aChunk of chunks) {
-          console.log(yaml.stringify(aChunk))
-        }
-      }
-     }
-    }
-  )
-
-  ScopeActions.addScopedAction(
-    'keyword.control.build.lpic',
-    import.meta.url,
-    async function(thisScope, theScope, theTokens, theLine, theDoc) {
       console.log("----------------------------------------------------------")
-      console.log("build")
-      console.log(`thisScope: ${thisScope}`)
-      console.log(` theScope: ${theScope}`)
-      console.log(`theTokens: ${theTokens}`)
-      console.log(`  theLine: ${theLine}`)
-      console.log(`   theDoc: ${theDoc.docName}`)
-     console.log("----------------------------------------------------------")
-     const buildName = theTokens[1]
-     const buildType = theTokens[3]
-     const buildInfo = Structures.getStructure('build')
-     buildInfo.addBuildArtifact(buildName, buildType)
+      const code = Structures.getStructure('code')
+      code.finalize()
     }
   )
 
@@ -164,7 +242,11 @@ export function registerActions(config, Builders, Grammars, ScopeActions, Struct
       console.log(`theTokens: ${theTokens}`)
       console.log(`  theLine: ${theLine}`)
       console.log(`   theDoc: ${theDoc.docName}`)
-     console.log("----------------------------------------------------------")      
+      console.log("----------------------------------------------------------")      
+      const buildName = theTokens[1]
+      const buildType = theTokens[3]
+      const buildInfo = Structures.getStructure('build')
+      buildInfo.startBuildArtifact(theDoc.docName, buildName, buildType)
     }
   )
 
@@ -179,7 +261,9 @@ export function registerActions(config, Builders, Grammars, ScopeActions, Struct
       console.log(`theTokens: ${theTokens}`)
       console.log(`  theLine: ${theLine}`)
       console.log(`   theDoc: ${theDoc.docName}`)
-     console.log("----------------------------------------------------------")      
+     console.log("----------------------------------------------------------")
+     const buildInfo = Structures.getStructure('build')
+     buildInfo.stopBuildArtifact(theDoc.docName, theLine)
     }
   )
 
@@ -195,8 +279,46 @@ export function registerActions(config, Builders, Grammars, ScopeActions, Struct
       console.log(`  theLine: ${theLine}`)
       console.log(`   theDoc: ${theDoc.docName}`)
      console.log("----------------------------------------------------------")
-     const buildName = theTokens[1]
-     const reqType   = theTokens[3]
+     const objectType = theTokens[1]
+     const objectName = theTokens[3]
+     const buildInfo = Structures.getStructure('build')
+     buildInfo.addBuildRequirement(theDoc.docName, objectType, objectName, theLine)
+    }
+  )
+
+  ScopeActions.addScopedAction(
+    'keyword.control.creates.lpic',
+    import.meta.url,
+    async function(thisScope, theScope, theTokens, theLine, theDoc) {
+      console.log("----------------------------------------------------------")
+      console.log("creates")
+      console.log(`thisScope: ${thisScope}`)
+      console.log(` theScope: ${theScope}`)
+      console.log(`theTokens: ${theTokens}`)
+      console.log(`  theLine: ${theLine}`)
+      console.log(`   theDoc: ${theDoc.docName}`)
+     console.log("----------------------------------------------------------")
+     const objectType = theTokens[1]
+     const objectName = theTokens[3]
+     const buildInfo = Structures.getStructure('build')
+     buildInfo.addBuildCreation(theDoc.docName, objectType, objectName, theLine)
+    }
+  )
+
+  ScopeActions.addScopedAction(
+    'finalize.control.description',
+    import.meta.url,
+    async function(thisScope, theScope, theTokens, theLine, theDoc) {
+      console.log("----------------------------------------------------------")
+      console.log("finalizeCode")
+      console.log(`thisScope: ${thisScope}`)
+      console.log(` theScope: ${theScope}`)
+      console.log(`theTokens: ${theTokens}`)
+      //console.log(`  theLine: ${theLine}`)
+      //console.log(`   theDoc: ${theDoc.docName}`)
+      console.log("----------------------------------------------------------")
+      const buildInfo = Structures.getStructure('build')
+      buildInfo.finalize()
     }
   )
 
