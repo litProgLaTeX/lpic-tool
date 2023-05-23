@@ -1,0 +1,54 @@
+projects:
+  jsonEchoKernel:
+    taskSnipet: gppInstallCommand
+    creates:
+      application:
+        - jsonEchoKernel
+    dependencies:
+      cObj:
+        - jeClass.o
+        - jeMain.o
+      package:
+        - xeus
+        - xeus-zmq
+        - libzmq
+      pkgLib:
+        - xeus.a
+        - xeus-zmq.a
+        - zmq.a
+      systemLib:
+        - crypto
+        - sodium
+        - uuid
+  jeMain:
+    taskSnipet: gppCompile
+    creates:
+      cObj:
+        - jeMain.o
+    dependencies:
+      srcInclude:
+        - jeClass.hpp
+      package:
+        - xeus
+        - xeus-zmq
+      pkgHeader:
+        - xeus/xkernel.hpp
+        - xeus/xkernel_configuration.hpp
+        - xeus-zmq/xserver_zmq.hpp
+  jeClass:
+    taskSnipet: gppCompile
+    creates:
+      cObj:
+        - jeClass.o
+    dependencies:
+      srcHeader:
+        - jeClass.hpp
+      package:
+        - xtl
+        - nl-json
+        - xeus
+      pkgHeader:
+        - xtl/xhash.hpp
+        - nlohmann/json.hpp
+        - xeus/xinterpreter.hpp
+        - xeus/xhelper.hpp

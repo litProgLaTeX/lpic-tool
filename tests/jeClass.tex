@@ -2,7 +2,7 @@
 
 \starttext
 
-\startCHeader{jeClass}
+\startCppHeader{jeClass}
 
 #ifndef JSON_ECHO_HPP
 #define JSON_ECHO_HPP
@@ -59,10 +59,10 @@ namespace jsonEcho {
 }
 
 #endif
-\stopCHeader
+\stopCppHeader
 
 
-\startCCode{jeClass}
+\startCppCode{jeClass}
 #include "jeClass.hpp"
 
 #include "xeus/xhelper.hpp"
@@ -186,6 +186,6 @@ void jsonEcho::JsonEcho::shutdown_request_impl() {
   std::cout << "Bye!" << std::endl;
 }
 
-\stopCCode
+\stopCppCode
 
 \stoptext

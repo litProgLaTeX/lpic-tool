@@ -18,8 +18,8 @@ To build this we need:
 \startDescription{jsonEchoKernel}{gppInstallCommand}
   \creates{application}{jsonEchoKernel}
 
-  \requires{cObj}{jeClass}
-  \requires{cObj}{jeMain}
+  \requires{cObj}{jeClass.o}
+  \requires{cObj}{jeMain.o}
 
   \requires{package}{xeus}
   \requires{pkgLib}{xeus.a}
@@ -28,7 +28,7 @@ To build this we need:
   \requires{pkgLib}{xeus-zmq.a}
 
   \requires{package}{libzmq}
-  \requires{pgkLib}{zmq.a}
+  \requires{pkgLib}{zmq.a}
 
   \requires{systemLib}{crypto}
   \requires{systemLib}{sodium}

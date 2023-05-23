@@ -20,7 +20,7 @@ class Components {
   }
 }
 
-export function registerActions(config, Builders, Grammars, ScopeActions, Structures) {
+export function registerActions(configDict, ConfigClass, Builders, Grammars, ScopeActions, Structures) {
 
   Structures.newStructure('components', new Components())
 
@@ -60,7 +60,7 @@ export function registerActions(config, Builders, Grammars, ScopeActions, Struct
         console.log(someComponents)
         for (const aDocPath of someComponents) {
           components.loaded(aDocPath)
-          await Grammars.traceParseOf(aDocPath, config)
+          await Grammars.traceParseOf(aDocPath, configDict)
         }
         someComponents = components.getPending()
       }

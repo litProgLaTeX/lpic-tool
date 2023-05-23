@@ -1,4 +1,6 @@
 
+import fsp  from "fs/promises"
+import path from "path"
 import yaml from "yaml"
 
 class Requirement {
@@ -87,8 +89,39 @@ class BuildReqs {
     theInfo['curDesc'].addCreation(objType, objName)
   }
 
-  finalize() {
-    console.log(yaml.stringify(this))
+  async finalize(configDict, ConfigClass) {
+    const projDesc = {}
+    const bInfo = this.buildInfo
+    for (const aDocName in bInfo) {
+      const artifacts = bInfo[aDocName]['artifacts']
+      for (const theArtifact of artifacts) {
+        const deps = {}
+        for (const aReq of theArtifact.requirements) {
+          if (!deps[aReq.objType]) deps[aReq.objType] = []
+          deps[aReq.objType].push(aReq.objName)
+        }
+        const creates = {}
+        for (const aCreation of theArtifact.creations) {
+          if (!creates[aCreation.objType]) creates[aCreation.objType] = []
+          creates[aCreation.objType].push(aCreation.objName)
+        }
+        projDesc[theArtifact.name] = {
+          'taskSnipet'   : theArtifact.type,
+          'creates'      : creates,
+          'dependencies' : deps
+        }
+      }
+    }
+
+    // ensure the srcDir exists...
+    const descDir = ConfigClass.getFirstDescriptionDir()
+    console.log(`ENSURING the [${descDir}] directory exists`)
+    await fsp.mkdir(descDir, { recursive: true })
+    
+    // write out the project description YAML file...
+    const projPath = path.join(descDir, 'projDesc.yaml')
+    console.log(`WRITING projDesc to [${projPath}]`)
+    await fsp.writeFile(projPath, yaml.stringify({'projects' : projDesc }))
   }
 }
 
@@ -149,7 +182,7 @@ class CodeChunks {
     delete theCode['codeName']
   }
 
-  finalize() {
+  async finalize(configDict, ConfigClass) {
     for (const aDocName in this.chunks) {
       for (const aCodeType in this.chunks[aDocName]) {
         console.log(aDocName)
@@ -165,14 +198,10 @@ class CodeChunks {
   }
 }
 
-export function registerActions(config, Builders, Grammars, ScopeActions, Structures) {
+export function registerActions(configDict, ConfigClass, Builders, Grammars, ScopeActions, Structures) {
 
   Structures.newStructure('code', new CodeChunks())
   Structures.newStructure('build', new BuildReqs())
-
-  function getCodeType(aScope) {
-    return aScope.split('.')[4]
-  }
 
   ScopeActions.addScopedAction(
     'keyword.control.source.start.lpic',
@@ -227,7 +256,7 @@ export function registerActions(config, Builders, Grammars, ScopeActions, Struct
       //console.log(`   theDoc: ${theDoc.docName}`)
       console.log("----------------------------------------------------------")
       const code = Structures.getStructure('code')
-      code.finalize()
+      await code.finalize(configDict. ConfigClass)
     }
   )
 
@@ -318,7 +347,7 @@ export function registerActions(config, Builders, Grammars, ScopeActions, Struct
       //console.log(`   theDoc: ${theDoc.docName}`)
       console.log("----------------------------------------------------------")
       const buildInfo = Structures.getStructure('build')
-      buildInfo.finalize()
+      await buildInfo.finalize(configDict, ConfigClass)
     }
   )
 
