@@ -183,15 +183,28 @@ class CodeChunks {
   }
 
   async finalize(configDict, ConfigClass) {
+    const codeExts = {
+      'CCode'     : '.c',
+      'CHeader'   : '.h',
+      'CppCode'   : '.cpp',
+      'CppHeader' : '.hpp'
+    }
+    const srcDir = ConfigClass.getSrcDir()
+    console.log(`ENSURING the [${srcDir}] directory exists`)
+    await fsp.mkdir(srcDir, { recursive: true })
+
     for (const aDocName in this.chunks) {
       for (const aCodeType in this.chunks[aDocName]) {
-        console.log(aDocName)
-        console.log(aCodeType)
         for (const aCodeName in this.chunks[aDocName][aCodeType]) {
+          var theCode = []
           const chunks = this.chunks[aDocName][aCodeType][aCodeName]['chunks']
           for (const aChunk of chunks) {
-            console.log(yaml.stringify(aChunk))
+            theCode = theCode.concat(aChunk['theLines'])
           }
+          // write out this source code...
+          const codePath = path.join(srcDir, aCodeName+codeExts[aCodeType])
+          console.log(`WRITING source code to [${codePath}]`)
+          await fsp.writeFile(codePath, theCode.join('\n'))
         }
       }
     }    
@@ -256,7 +269,7 @@ export function registerActions(configDict, ConfigClass, Builders, Grammars, Sco
       //console.log(`   theDoc: ${theDoc.docName}`)
       console.log("----------------------------------------------------------")
       const code = Structures.getStructure('code')
-      await code.finalize(configDict. ConfigClass)
+      await code.finalize(configDict, ConfigClass)
     }
   )
 
