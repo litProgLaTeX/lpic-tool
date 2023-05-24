@@ -1,0 +1,25 @@
+packages:
+  libzmq:
+    # https://github.com/zeromq/libzmq
+
+    taskSnipet: cmakeCompile
+
+    environment:
+      repoProvider: github
+      repoPath: zeromq/libzmq
+      repoVersion: 'v4.3.4'
+
+    created:
+      libs:
+        - zmq.a
+
+    tools:
+      - cpp
+      - cmake
+      - ninja
+
+# NOTES:
+
+# This should/may require the following OS packages:
+#  - OpenSSL (libssl and libcrypto)
+#  - Sodium

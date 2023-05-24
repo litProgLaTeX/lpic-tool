@@ -21,11 +21,14 @@ To build this we need:
   \requires{cObj}{jeClass.o}
   \requires{cObj}{jeMain.o}
 
-  \requires{package}{xeus}
-  \requires{pkgLib}{xeus.a}
+It is important to note that the 'xeus-zmq' library MUST come before the 'xeus'
+library!
 
   \requires{package}{xeus-zmq}
   \requires{pkgLib}{xeus-zmq.a}
+
+  \requires{package}{xeus}
+  \requires{pkgLib}{xeus.a}
 
   \requires{package}{libzmq}
   \requires{pkgLib}{zmq.a}
@@ -35,10 +38,10 @@ To build this we need:
   \requires{systemLib}{uuid}
 \stopDescription
   
-\startDescription{jeMain}{gppCompile}
+\startDescription{jeMain.cpp}{gppCompile}
   \creates{cObj}{jeMain.o}
 
-  \requires{srcInclude}{jeClass.hpp}
+  \requires{srcHeader}{jeClass.hpp}
 
   \requires{package}{xeus}
   \requires{pkgHeader}{xeus/xkernel.hpp}
@@ -48,7 +51,7 @@ To build this we need:
   \requires{pkgHeader}{xeus-zmq/xserver_zmq.hpp}
 \stopDescription
   
-\startDescription{jeClass}{gppCompile}
+\startDescription{jeClass.cpp}{gppCompile}
   \creates{cObj}{jeClass.o}
 
   \requires{srcHeader}{jeClass.hpp}

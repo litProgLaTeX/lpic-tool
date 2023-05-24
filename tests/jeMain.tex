@@ -2,7 +2,7 @@
 
 \starttext
 
-\startCppCode{jeMain}
+\startCppCode{jeMain.cpp}
 #include <memory>
 #include <algorithm>  // std:algorithms defines std::find
 
@@ -31,30 +31,30 @@ bool cmdOptionExists(char** begin, char** end, const std::string& option) {
 int main(int argc, char* argv[]) {
 
   // deal with a request for the command line help
-  if (cmdOptionsExists(argv, argv+argc, "-h")) {
+  if (cmdOptionExists(argv, argv+argc, "-h")) {
     // print the help text then exit
     return 0;
   }
 
   // deal with a request to write out the kernel.json file
   // see: https://jupyter-client.readthedocs.io/en/stable/kernels.html#kernel-specs
-  std::string kernelFilePath = getCmdOption(argv, argv+argc, "-j);
+  char* kernelFilePath = getCmdOption(argv, argv+argc, "-j");
   if (kernelFilePath) {
     // write out the kernel file
     return 0;
   }
 
   // deal with the "normal" jupyter call
-  std::string fileName = getCmdOption(argv, argv+argc, "-f");
+  const char* fileName = getCmdOption(argv, argv+argc, "-f");
   if (!fileName) {
-    std::string fileName = (argc == 1) ? "connection.json" : argv[2];
+    fileName = (argc == 1) ? "connection.json" : argv[2];
   }
   if (!fileName) {
     // print an error message and then exit
     return 1;
   }
 
-  xeus::xconfiguration config = xeus::load_configuration(fileName);
+  xeus::xconfiguration config = xeus::load_configuration(std::string(fileName));
 
   auto context = xeus::make_context<zmq::context_t>();
 

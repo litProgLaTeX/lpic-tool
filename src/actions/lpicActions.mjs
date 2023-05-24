@@ -113,15 +113,15 @@ class BuildReqs {
       }
     }
 
-    // ensure the srcDir exists...
-    const descDir = ConfigClass.getFirstDescriptionDir()
-    console.log(`ENSURING the [${descDir}] directory exists`)
-    await fsp.mkdir(descDir, { recursive: true })
+    // ensure the projDesc paths exist...
+    const projDescPath = ConfigClass.getProjDescPath()
+    const projDescDir  = path.dirname(projDescPath)
+    console.log(`ENSURING the [${projDescDir}] directory exists`)
+    await fsp.mkdir(projDescDir, { recursive: true })
     
     // write out the project description YAML file...
-    const projPath = path.join(descDir, 'projDesc.yaml')
-    console.log(`WRITING projDesc to [${projPath}]`)
-    await fsp.writeFile(projPath, yaml.stringify({'projects' : projDesc }))
+    console.log(`WRITING projDesc to [${projDescPath}]`)
+    await fsp.writeFile(projDescPath, yaml.stringify({'projects' : projDesc }))
   }
 }
 
@@ -183,12 +183,6 @@ class CodeChunks {
   }
 
   async finalize(configDict, ConfigClass) {
-    const codeExts = {
-      'CCode'     : '.c',
-      'CHeader'   : '.h',
-      'CppCode'   : '.cpp',
-      'CppHeader' : '.hpp'
-    }
     const srcDir = ConfigClass.getSrcDir()
     console.log(`ENSURING the [${srcDir}] directory exists`)
     await fsp.mkdir(srcDir, { recursive: true })
@@ -202,7 +196,7 @@ class CodeChunks {
             theCode = theCode.concat(aChunk['theLines'])
           }
           // write out this source code...
-          const codePath = path.join(srcDir, aCodeName+codeExts[aCodeType])
+          const codePath = path.join(srcDir, aCodeName)
           console.log(`WRITING source code to [${codePath}]`)
           await fsp.writeFile(codePath, theCode.join('\n'))
         }

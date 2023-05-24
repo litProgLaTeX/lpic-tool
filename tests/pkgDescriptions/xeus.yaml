@@ -1,0 +1,37 @@
+packages:
+  xeus:
+    # https://github.com/jupyter-xeus/xeus
+
+    taskSnipet: cmakeCompile
+
+    environment:
+      repoProvider: github
+      repoPath: jupyter-xeus/xeus
+      repoVersion: '3.0.5'
+
+    created:
+      libs:
+        - xeus.a
+      includes:
+        - xeus/xkernel.hpp
+        - xeus/xkernel_configuration.hpp
+        - xeus/xhelper.hpp
+
+    dependencies:
+      packages:
+        - nl-json
+        - xtl
+      pkgIncludes:
+        - nlohmann/json.hpp
+        - xtl/xhash.hpp
+
+    tools:
+      - cpp
+      - cmake
+      - ninja
+
+
+# Notes:
+
+# xeus (on linux) REQUIRES the OS packages:
+#  - uuid

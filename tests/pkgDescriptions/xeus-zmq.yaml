@@ -1,0 +1,41 @@
+packages:
+  xeus-zmq:
+    # https://github.com/jupyter-xeus/xeus-zmq
+
+    taskSnipet: cmakeCompile
+
+    environment:
+      repoProvider: github
+      repoPath: jupyter-xeus/xeus-zmq
+      repoVersion: '1.0.2'
+
+    created:
+      libs:
+        - xeus-zmq.a
+      includes:
+        - xeus-zmq/zserver_zmg.hpp
+
+    dependencies:
+      packages:
+        - xeus
+        - libzmq
+        - cppzmq
+        - nl-json
+      pkgLibs:
+        - zmq.a
+        - xeus.a
+      pkgIncludes:
+        - zmq.h
+        - xeus/xkernel.hpp
+        - xeus/xkernel_configuration.hpp
+        - xeus/xhelper.hpp
+
+    tools:
+      - cpp
+      - cmake
+      - ninja
+
+# Notes:
+
+# xeus-zmq REQUIRES the following OS packages:
+#  - OpenSSL (libssl and libcryptop)
