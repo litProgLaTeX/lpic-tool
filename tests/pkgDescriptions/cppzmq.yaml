@@ -13,6 +13,10 @@ packages:
       includes:
         - zmq.h
 
+    dependencies:
+      packages:
+        - libzmq
+
     tools:
       - cmake
       - ninja
