@@ -20,3 +20,10 @@ packages:
     tools:
       - cmake
       - ninja
+
+    cmake:
+      options:
+        CPPZMQ_BUILD_TESTS: OFF
+
+# NOTE: the default cmake will build the tests which in turn require
+# libbsd-dev
