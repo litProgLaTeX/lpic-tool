@@ -16,3 +16,7 @@ packages:
     tools:
       - cmake
       - ninja
+
+    cmake:
+      options:
+        JSON_BuildTests: OFF

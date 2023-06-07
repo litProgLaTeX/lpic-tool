@@ -13,7 +13,7 @@ packages:
       libs:
         - xeus-zmq.a
       includes:
-        - xeus-zmq/xserver_zmg.hpp
+        - xeus-zmq/xserver_zmq.hpp
 
     dependencies:
       packages:

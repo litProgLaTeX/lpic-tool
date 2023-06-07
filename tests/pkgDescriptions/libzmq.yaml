@@ -18,6 +18,10 @@ packages:
       - cmake
       - ninja
 
+    cmake:
+      options:
+        BUILD_TESTS: OFF
+
 # NOTES:
 
 # This should/may require the following OS packages:

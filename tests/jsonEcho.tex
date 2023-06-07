@@ -36,8 +36,9 @@ library!
   \requires{systemLib}{crypto}
   \requires{systemLib}{sodium}
   \requires{systemLib}{uuid}
+  \requires{systemLib}{pthread}
 \stopDescription
-  
+
 \startDescription{jeMain.cpp}{gppCompile}
   \creates{cObj}{jeMain.o}
 
@@ -50,7 +51,7 @@ library!
   \requires{package}{xeus-zmq}
   \requires{pkgHeader}{xeus-zmq/xserver_zmq.hpp}
 \stopDescription
-  
+
 \startDescription{jeClass.cpp}{gppCompile}
   \creates{cObj}{jeClass.o}
 
