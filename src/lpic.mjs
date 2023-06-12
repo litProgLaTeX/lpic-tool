@@ -1,10 +1,10 @@
 
 import yaml from "yaml"
 
-import { Config, AppendableCommand } from "tmgrammars/lib/configuration.mjs"
-import { Grammars     } from "tmgrammars/lib/grammars.mjs"
-import { ScopeActions } from "tmgrammars/lib/scopeActions.mjs"
-import { Structures   } from "tmgrammars/lib/structures.mjs"
+import { Config, AppendableCommand } from "lpic-modules/lib/configuration.mjs"
+import { Grammars     } from "lpic-modules/lib/grammars.mjs"
+import { ScopeActions } from "lpic-modules/lib/scopeActions.mjs"
+import { Structures   } from "lpic-modules/lib/structures.mjs"
 
 const True  = 1
 const False = 0
@@ -67,13 +67,18 @@ try {
   process.exit(1)
 }
 
-if (cliArgs.args.length < 1) {
+if (config['initialFiles'].length < 1) {
   console.log("No document specified to parse")
   process.exit(0)
 }
 
-ScopeActions.runInitializingActions('lpic', [])
-cliArgs.args.forEach(async function(aDocPath){
-  await Grammars.parse(aDocPath)
-})
-ScopeActions.runFinalizingActions('lpic', [])
+try {
+  await ScopeActions.runActionsStartingWith('initialize', 'lpic', [], config['parallel'])
+  
+  await ScopeActions.runActionsStartingWith('run', 'lpic', config['initialFiles'], config['parallel'])
+  
+  await ScopeActions.runActionsStartingWith('finalize', 'lpic', [], config['parallel'])
+} catch (err) {
+  const error = await err
+  console.log(error)
+}

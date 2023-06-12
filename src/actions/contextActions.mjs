@@ -27,30 +27,34 @@ export function registerActions(configDict, ConfigClass, Builders, Grammars, Sco
   ScopeActions.addScopedAction(
     'initialize.control.structure.context',
     import.meta.url,
-    async function(thisScope, theScope, theTokens, theLine, theDoc) {
-      console.log("----------------------------------------------------------")
-      console.log("initializeComponents")
-      console.log(`thisScope: ${thisScope}`)
-      console.log(` theScope: ${theScope}`)
-      console.log(`theTokens: ${theTokens}`)
-      //console.log(`  theLine: ${theLine}`)
-      //console.log(`   theDoc: ${theDoc.docName}`)
-      console.log("----------------------------------------------------------")  
+    async function(thisScope, theScope, theTokens, theLine, theDoc, trace) {
+      if (trace) {
+        console.log("----------------------------------------------------------")
+        console.log("initializeComponents")
+        console.log(`thisScope: ${thisScope}`)
+        console.log(` theScope: ${theScope}`)
+        console.log(`theTokens: ${theTokens}`)
+        //console.log(`  theLine: ${theLine}`)
+        //console.log(`   theDoc: ${theDoc.docName}`)
+        console.log("----------------------------------------------------------")  
+      }
     }
   )
 
   ScopeActions.addScopedAction(
     'run.load.components.context',
     import.meta.url,
-    async function(thisScope, theScope, theTokens, theLine, theDoc) {
-      console.log("----------------------------------------------------------")
-      console.log("runComponent")
-      console.log(`thisScope: ${thisScope}`)
-      console.log(` theScope: ${theScope}`)
-      console.log(`theTokens: ${theTokens}`)
-      //console.log(`  theLine: ${theLine}`)
-      //console.log(`   theDoc: ${theDoc.docName}`)
-      console.log("----------------------------------------------------------")
+    async function(thisScope, theScope, theTokens, theLine, theDoc, trace) {
+      if (trace) {
+        console.log("----------------------------------------------------------")
+        console.log("runComponent")
+        console.log(`thisScope: ${thisScope}`)
+        console.log(` theScope: ${theScope}`)
+        console.log(`theTokens: ${theTokens}`)
+        //console.log(`  theLine: ${theLine}`)
+        //console.log(`   theDoc: ${theDoc.docName}`)
+        console.log("----------------------------------------------------------")
+      }
       const components = Structures.getStructure('components')
       for (const aDocPath of theTokens) {
         components.pending(aDocPath)
@@ -70,33 +74,37 @@ export function registerActions(configDict, ConfigClass, Builders, Grammars, Sco
   ScopeActions.addScopedAction(
     'keyword.control.structure.context',
     import.meta.url,
-    async function(thisScope, theScope, theTokens, theLine, theDoc) {
+    async function(thisScope, theScope, theTokens, theLine, theDoc, trace) {
       const components = Structures.getStructure('components')
       components.pending(theTokens[1]+'.tex')
-      console.log("----------------------------------------------------------")
-      console.log("loadComponent")
-      console.log(`thisScope: ${thisScope}`)
-      console.log(` theScope: ${theScope}`)
-      console.log(`theTokens: ${theTokens}`)
-      console.log(`  theLine: ${theLine}`)
-      console.log(`   theDoc: ${theDoc.docName}`)
-      console.log("----------------------------------------------------------")
+      if (trace) {
+        console.log("----------------------------------------------------------")
+        console.log("loadComponent")
+        console.log(`thisScope: ${thisScope}`)
+        console.log(` theScope: ${theScope}`)
+        console.log(`theTokens: ${theTokens}`)
+        console.log(`  theLine: ${theLine}`)
+        console.log(`   theDoc: ${theDoc.docName}`)
+        console.log("----------------------------------------------------------")
+      }
     }
   )
 
   ScopeActions.addScopedAction(
     'finalize.control.structure.context',
     import.meta.url,
-    async function(thisScope, theScope, theTokens, theLine, theDoc) {
-      console.log("----------------------------------------------------------")
-      console.log("finalizeComponents")
-      console.log(`thisScope: ${thisScope}`)
-      console.log(` theScope: ${theScope}`)
-      console.log(`theTokens: ${theTokens}`)
-      //console.log(`  theLine: ${theLine}`)
-      //console.log(`   theDoc: ${theDoc.docName}`)
-     console.log("----------------------------------------------------------") 
-    } 
+    async function(thisScope, theScope, theTokens, theLine, theDoc, trace) {
+      if (trace) {
+        console.log("----------------------------------------------------------")
+        console.log("finalizeComponents")
+        console.log(`thisScope: ${thisScope}`)
+        console.log(` theScope: ${theScope}`)
+        console.log(`theTokens: ${theTokens}`)
+        //console.log(`  theLine: ${theLine}`)
+        //console.log(`   theDoc: ${theDoc.docName}`)
+        console.log("----------------------------------------------------------") 
+      } 
+    }
   )
 
 }

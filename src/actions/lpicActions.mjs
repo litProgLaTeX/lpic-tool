@@ -213,55 +213,61 @@ export function registerActions(configDict, ConfigClass, Builders, Grammars, Sco
   ScopeActions.addScopedAction(
     'keyword.control.source.start.lpic',
     import.meta.url,
-    async function(thisScope, theScope, theTokens, theLine, theDoc) {
+    async function(thisScope, theScope, theTokens, theLine, theDoc, trace) {
       const codeType = theTokens[1]
       const codeName = theTokens[3]
-      console.log("----------------------------------------------------------")
-      console.log("startCode")
-      console.log(`thisScope: ${thisScope}`)
-      console.log(` theScope: ${theScope}`)
-      console.log(` codeType: ${codeType}`)
-      console.log(` codeName: ${codeName}`)
-      console.log(`theTokens: ${theTokens}`)
-      console.log(`  theLine: ${theLine}`)
-      console.log(`   theDoc: ${theDoc.docName}`)
-     console.log("----------------------------------------------------------")
-     const code = Structures.getStructure('code')
-     code.startCodeFor(theDoc.docName, codeType, codeName, theLine)
+      if (trace) {
+        console.log("----------------------------------------------------------")
+        console.log("startCode")
+        console.log(`thisScope: ${thisScope}`)
+        console.log(` theScope: ${theScope}`)
+        console.log(` codeType: ${codeType}`)
+        console.log(` codeName: ${codeName}`)
+        console.log(`theTokens: ${theTokens}`)
+        console.log(`  theLine: ${theLine}`)
+        console.log(`   theDoc: ${theDoc.docName}`)
+        console.log("----------------------------------------------------------")
+      }
+      const code = Structures.getStructure('code')
+      code.startCodeFor(theDoc.docName, codeType, codeName, theLine)
     }
   )
 
   ScopeActions.addScopedAction(
     'keyword.control.source.stop.lpic',
     import.meta.url,
-    async function(thisScope, theScope, theTokens, theLine, theDoc) {
+    async function(thisScope, theScope, theTokens, theLine, theDoc, trace) {
       const codeType = theTokens[1]
-      console.log("----------------------------------------------------------")
-      console.log("stopCode")
-      console.log(`thisScope: ${thisScope}`)
-      console.log(` theScope: ${theScope}`)
-      console.log(` codeType: ${codeType}`)
-      console.log(`theTokens: ${theTokens}`)
-      console.log(`  theLine: ${theLine}`)
-      console.log(`   theDoc: ${theDoc.docName}`)
-     console.log("----------------------------------------------------------") 
-     const code = Structures.getStructure('code')
-     code.stopCodeFor(theDoc.docName, codeType, theLine, theDoc.docLines)
-   }
+      if (trace) {
+        console.log("----------------------------------------------------------")
+        console.log("stopCode")
+        console.log(`thisScope: ${thisScope}`)
+        console.log(` theScope: ${theScope}`)
+        console.log(` codeType: ${codeType}`)
+        console.log(`theTokens: ${theTokens}`)
+        console.log(`  theLine: ${theLine}`)
+        console.log(`   theDoc: ${theDoc.docName}`)
+        console.log("----------------------------------------------------------") 
+      }
+      const code = Structures.getStructure('code')
+      code.stopCodeFor(theDoc.docName, codeType, theLine, theDoc.docLines)
+    }
   )
 
   ScopeActions.addScopedAction(
     'finalize.control.source',
     import.meta.url,
-    async function(thisScope, theScope, theTokens, theLine, theDoc) {
-      console.log("----------------------------------------------------------")
-      console.log("finalizeCode")
-      console.log(`thisScope: ${thisScope}`)
-      console.log(` theScope: ${theScope}`)
-      console.log(`theTokens: ${theTokens}`)
-      //console.log(`  theLine: ${theLine}`)
-      //console.log(`   theDoc: ${theDoc.docName}`)
-      console.log("----------------------------------------------------------")
+    async function(thisScope, theScope, theTokens, theLine, theDoc, trace) {
+      if (trace) {
+        console.log("----------------------------------------------------------")
+        console.log("finalizeCode")
+        console.log(`thisScope: ${thisScope}`)
+        console.log(` theScope: ${theScope}`)
+        console.log(`theTokens: ${theTokens}`)
+        //console.log(`  theLine: ${theLine}`)
+        //console.log(`   theDoc: ${theDoc.docName}`)
+        console.log("----------------------------------------------------------")
+      }
       const code = Structures.getStructure('code')
       await code.finalize(configDict, ConfigClass)
     }
@@ -270,15 +276,17 @@ export function registerActions(configDict, ConfigClass, Builders, Grammars, Sco
   ScopeActions.addScopedAction(
     'keyword.control.description.start.lpic',
     import.meta.url,
-    async function(thisScope, theScope, theTokens, theLine, theDoc) {
-      console.log("----------------------------------------------------------")
-      console.log("description-start")
-      console.log(`thisScope: ${thisScope}`)
-      console.log(` theScope: ${theScope}`)
-      console.log(`theTokens: ${theTokens}`)
-      console.log(`  theLine: ${theLine}`)
-      console.log(`   theDoc: ${theDoc.docName}`)
-      console.log("----------------------------------------------------------")      
+    async function(thisScope, theScope, theTokens, theLine, theDoc, trace) {
+      if (trace) {
+        console.log("----------------------------------------------------------")
+        console.log("description-start")
+        console.log(`thisScope: ${thisScope}`)
+        console.log(` theScope: ${theScope}`)
+        console.log(`theTokens: ${theTokens}`)
+        console.log(`  theLine: ${theLine}`)
+        console.log(`   theDoc: ${theDoc.docName}`)
+        console.log("----------------------------------------------------------")      
+      }
       const buildName = theTokens[1]
       const buildType = theTokens[3]
       const buildInfo = Structures.getStructure('build')
@@ -289,70 +297,78 @@ export function registerActions(configDict, ConfigClass, Builders, Grammars, Sco
   ScopeActions.addScopedAction(
     'keyword.control.description.stop.lpic',
     import.meta.url,
-    async function(thisScope, theScope, theTokens, theLine, theDoc) {
-      console.log("----------------------------------------------------------")
-      console.log("description-stop")
-      console.log(`thisScope: ${thisScope}`)
-      console.log(` theScope: ${theScope}`)
-      console.log(`theTokens: ${theTokens}`)
-      console.log(`  theLine: ${theLine}`)
-      console.log(`   theDoc: ${theDoc.docName}`)
-     console.log("----------------------------------------------------------")
-     const buildInfo = Structures.getStructure('build')
-     buildInfo.stopBuildArtifact(theDoc.docName, theLine)
+    async function(thisScope, theScope, theTokens, theLine, theDoc, trace) {
+      if (trace) {
+        console.log("----------------------------------------------------------")
+        console.log("description-stop")
+        console.log(`thisScope: ${thisScope}`)
+        console.log(` theScope: ${theScope}`)
+        console.log(`theTokens: ${theTokens}`)
+        console.log(`  theLine: ${theLine}`)
+        console.log(`   theDoc: ${theDoc.docName}`)
+        console.log("----------------------------------------------------------")
+      }
+      const buildInfo = Structures.getStructure('build')
+      buildInfo.stopBuildArtifact(theDoc.docName, theLine)
     }
   )
 
   ScopeActions.addScopedAction(
     'keyword.control.requires.lpic',
     import.meta.url,
-    async function(thisScope, theScope, theTokens, theLine, theDoc) {
-      console.log("----------------------------------------------------------")
-      console.log("requires")
-      console.log(`thisScope: ${thisScope}`)
-      console.log(` theScope: ${theScope}`)
-      console.log(`theTokens: ${theTokens}`)
-      console.log(`  theLine: ${theLine}`)
-      console.log(`   theDoc: ${theDoc.docName}`)
-     console.log("----------------------------------------------------------")
-     const objectType = theTokens[1]
-     const objectName = theTokens[3]
-     const buildInfo = Structures.getStructure('build')
-     buildInfo.addBuildRequirement(theDoc.docName, objectType, objectName, theLine)
+    async function(thisScope, theScope, theTokens, theLine, theDoc, trace) {
+      if (trace) {
+        console.log("----------------------------------------------------------")
+        console.log("requires")
+        console.log(`thisScope: ${thisScope}`)
+        console.log(` theScope: ${theScope}`)
+        console.log(`theTokens: ${theTokens}`)
+        console.log(`  theLine: ${theLine}`)
+        console.log(`   theDoc: ${theDoc.docName}`)
+        console.log("----------------------------------------------------------")
+      }
+      const objectType = theTokens[1]
+      const objectName = theTokens[3]
+      const buildInfo = Structures.getStructure('build')
+      buildInfo.addBuildRequirement(theDoc.docName, objectType, objectName, theLine)
     }
   )
 
   ScopeActions.addScopedAction(
     'keyword.control.creates.lpic',
     import.meta.url,
-    async function(thisScope, theScope, theTokens, theLine, theDoc) {
-      console.log("----------------------------------------------------------")
-      console.log("creates")
-      console.log(`thisScope: ${thisScope}`)
-      console.log(` theScope: ${theScope}`)
-      console.log(`theTokens: ${theTokens}`)
-      console.log(`  theLine: ${theLine}`)
-      console.log(`   theDoc: ${theDoc.docName}`)
-     console.log("----------------------------------------------------------")
-     const objectType = theTokens[1]
-     const objectName = theTokens[3]
-     const buildInfo = Structures.getStructure('build')
-     buildInfo.addBuildCreation(theDoc.docName, objectType, objectName, theLine)
+    async function(thisScope, theScope, theTokens, theLine, theDoc, trace) {
+      if (trace) {
+        console.log("----------------------------------------------------------")
+        console.log("creates")
+        console.log(`thisScope: ${thisScope}`)
+        console.log(` theScope: ${theScope}`)
+        console.log(`theTokens: ${theTokens}`)
+        console.log(`  theLine: ${theLine}`)
+        console.log(`   theDoc: ${theDoc.docName}`)
+        console.log("----------------------------------------------------------")
+      }
+      const objectType = theTokens[1]
+      const objectName = theTokens[3]
+      const buildInfo = Structures.getStructure('build')
+      buildInfo.addBuildCreation(theDoc.docName, objectType, objectName, theLine)
     }
   )
 
   ScopeActions.addScopedAction(
     'finalize.control.description',
     import.meta.url,
-    async function(thisScope, theScope, theTokens, theLine, theDoc) {
-      console.log("----------------------------------------------------------")
-      console.log("finalizeCode")
-      console.log(`thisScope: ${thisScope}`)
-      console.log(` theScope: ${theScope}`)
-      console.log(`theTokens: ${theTokens}`)
-      //console.log(`  theLine: ${theLine}`)
-      //console.log(`   theDoc: ${theDoc.docName}`)
-      console.log("----------------------------------------------------------")
+    async function(thisScope, theScope, theTokens, theLine, theDoc, trace) {
+      if (trace) {
+        console.log("----------------------------------------------------------")
+        console.log("finalizeCode")
+        console.log(`thisScope: ${thisScope}`)
+        console.log(` theScope: ${theScope}`)
+        console.log(`theTokens: ${theTokens}`)
+        //console.log(`  theLine: ${theLine}`)
+        //console.log(`   theDoc: ${theDoc.docName}`)
+        console.log("----------------------------------------------------------")
+      }
       const buildInfo = Structures.getStructure('build')
       await buildInfo.finalize(configDict, ConfigClass)
     }
