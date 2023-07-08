@@ -1,48 +1,50 @@
 cfdoitConfig: cfdoit.toml
-loadActions:
-  - ~/GitTools/lpic/lpic-tool/src/actions
-loadGrammar:
-  - ~/GitTools/lpic/lpic-syntaxes/lpicSyntaxes/context.tmLanguage.json
-  - ~/GitTools/lpic/lpic-syntaxes/lpicSyntaxes/lpic.tmLanguage.json
-loadBuilders:
-  - ~/GitTools/lpic/lpic-tool/src/builders
-traceLines:
-  name: traceLines
-  include:
-    - start
-    - stop
-    - requires
-    - creates
-  exclude: []
-traceActions:
-  name: traceActions
-  loaded:
-    - meta.context.starttext
-    - source.ansic.header
-    - source.c.lpic
-  include: []
-  exclude: []
-traceScopes:
-  name: traceScopes
-  loaded:
-    - keyword.control.document.starttext.context
-    - keyword.control.document.stoptext.context
-    - keyword.control.structure.context
-    - keyword.control.structure.start.context
-    - keyword.control.structure.stop.context
-    - meta.document
-    - meta.document.block.context
-    - meta.structure
-    - meta.structure.block.context
-    - meta.structure.name.context
-    - source.c.lpic
-    - source.context
-    - source.lpic
-    - text.tex.command.lpic
-  include: []
-  exclude: []
-traceStructures:
-  name: traceStructures
-  loaded: []
-  include: []
-  exclude: []
+load:
+  actions:
+    - ~/GitTools/lpic/lpic-tool/dist/src/actions
+  grammars:
+    - ~/GitTools/lpic/lpic-syntaxes/lpicSyntaxes/context.tmLanguage.json
+    - ~/GitTools/lpic/lpic-syntaxes/lpicSyntaxes/lpic.tmLanguage.json
+  builders:
+    - ~/GitTools/lpic/lpic-tool/dist/src/builders
+trace:
+  lines:
+    name: traceLines
+    include:
+      - start
+      - stop
+      - requires
+      - creates
+    exclude: []
+  actions:
+    name: traceActions
+    loaded:
+      - meta.context.starttext
+      - source.ansic.header
+      - source.c.lpic
+    include: []
+    exclude: []
+  scopes:
+    name: traceScopes
+    loaded:
+      - keyword.control.document.starttext.context
+      - keyword.control.document.stoptext.context
+      - keyword.control.structure.context
+      - keyword.control.structure.start.context
+      - keyword.control.structure.stop.context
+      - meta.document
+      - meta.document.block.context
+      - meta.structure
+      - meta.structure.block.context
+      - meta.structure.name.context
+      - source.c.lpic
+      - source.context
+      - source.lpic
+      - text.tex.command.lpic
+    include: []
+    exclude: []
+  structures:
+    name: traceStructures
+    loaded: []
+    include: []
+    exclude: []

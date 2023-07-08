@@ -1,22 +1,22 @@
 
 class Components {
 
-  pendingComponents = {}
-  loadedComponents  = {}
+  pendingComponents : Set<string> = new Set()
+  loadedComponents : Set<string>  = new Set()
 
-  pending(aComponent) {
-    this.pendingComponents[aComponent] = true
+  pending(aComponent : string) {
+    this.pendingComponents.add(aComponent)
   }
 
   getPending() {
     return Object.keys(this.pendingComponents)
   }
 
-  loaded(aComponent) {
-    if (this.pendingComponents[aComponent]) {
-      delete this.pendingComponents[aComponent]
+  loaded(aComponent : string) {
+    if (this.pendingComponents.has(aComponent)) {
+      this.pendingComponents.delete(aComponent)
     }
-    this.loadedComponents[aComponent] = true
+    this.loadedComponents.add(aComponent)
   }
 }
 
