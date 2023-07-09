@@ -3,104 +3,146 @@ import fsp  from "fs/promises"
 import path from "path"
 import yaml from "yaml"
 
+import { BuildConfig  } from "lpic-modules/dist/lib/configBuild.js"
+import { Grammars     } from "lpic-modules/dist/lib/grammars.js"
+import { Document     } from "lpic-modules/dist/lib/documents.js"
+import { ScopeActions } from "lpic-modules/dist/lib/scopeActions.js"
+import { Structures   } from "lpic-modules/dist/lib/structures.js"
+
+import { Logging, ValidLogger  } from "lpic-modules/dist/lib/logging.js"
+
+const logger : ValidLogger = Logging.getLogger('lpic')
+
 class Requirement {
-  constructor(objType, objName) {
+  objType : string
+  objName : string
+
+  constructor(objType : string, objName : string) {
     this.objType = objType
     this.objName = objName
   }
 }
 
 class Creation {
-  constructor(objType, objName) {
+  objType : string
+  objName : string
+
+  constructor(objType : string, objName : string) {
     this.objType = objType
     this.objName = objName
   }
 }
 
 class BuildArtifact {
-  constructor(artifactName, buildType) {
+  name : string
+  type : string
+  requirements : Array<Requirement>
+  creations : Array<Creation>
+  constructor(artifactName : string, buildType : string) {
     this.name         = artifactName
     this.type         = buildType
     this.requirements = []
     this.creations    = []
   }
 
-  addRequirement(objType, objName) {
+  addRequirement(objType : string, objName : string) {
     this.requirements.push(new Requirement(objType, objName))
   }
 
-  addCreation(objType, objName) {
+  addCreation(objType : string, objName : string) {
     this.creations.push(new Creation(objType, objName))
   }
 }
 
+class DocBuilder {
+  curDesc   : BuildArtifact | undefined
+  artifacts : Array<BuildArtifact> = []
+}
+
 class BuildReqs {
 
-  buildInfo = {}
+  buildInfo : Map<string, DocBuilder> = new Map()
 
   // We place `docName` as the base index to reduce the rare chance of race
   // conditions when working asynchronously
   //
 
-  _getBuildInfo(docName) {
-    if (!this.buildInfo[docName]) this.buildInfo[docName] = {}
-    if (!this.buildInfo[docName]['artifacts']) this.buildInfo[docName]['artifacts'] = []
-    return this.buildInfo[docName]
+  _getBuildInfo(docName : string) {
+    if (!this.buildInfo.has(docName)) this.buildInfo.set(docName, new DocBuilder() )
+    return this.buildInfo.get(docName)
   }
 
-  startBuildArtifact(docName, buildName, buildType) {
+  startBuildArtifact(docName : string, buildName : string, buildType : string) {
     const theInfo = this._getBuildInfo(docName)
-    if (theInfo['curDesc']) {
-      const aDesc = theInfo['curDesc']
-      theInfo['artifacts'].push(aDesc)
+    if (theInfo) {
+      if (theInfo.curDesc) {
+        const aDesc = theInfo.curDesc
+        theInfo.artifacts.push(aDesc)
+      }
+      theInfo.curDesc = new BuildArtifact(buildName, buildType)
     }
-    theInfo['curDesc'] = new BuildArtifact(buildName, buildType)
   }
 
-  stopBuildArtifact(docName, lineNumber, logger) {
+  stopBuildArtifact(docName : string, lineNumber : number) {
     const theInfo = this._getBuildInfo(docName)
-    if (!theInfo['curDesc']) {
-      logger.trace(`WARNING: no start of the current artifact build description in ${docName}`)
-      logger.trace(`  ... ignoring the artifact which ends at ${lineNumber}!`)
-      return
+    if (theInfo) {
+      if (!theInfo.curDesc) {
+        logger.trace(`WARNING: no start of the current artifact build description in ${docName}`)
+        logger.trace(`  ... ignoring the artifact which ends at ${lineNumber}!`)
+        return
+      }
+      const aDesc = theInfo.curDesc
+      theInfo.artifacts.push(aDesc)
+      delete theInfo.curDesc
     }
-    const aDesc = theInfo['curDesc']
-    theInfo['artifacts'].push(aDesc)
-    delete theInfo['curDesc']
   }
 
-  addBuildRequirement(docName, objType, objName, lineNumber, logger) {
+  addBuildRequirement(
+    docName : string,
+    objType : string,
+    objName : string,
+    lineNumber : number,
+  ) {
     const theInfo = this._getBuildInfo(docName)
-    if (!theInfo['curDesc']) {
-      logger.trace(`WARNING: no start of the current artifact build description in ${docName}`)
-      logger.trace(`  ... ignoring the requirement at ${lineNumber}!`)
-      return
+    if (theInfo) {
+      if (!theInfo.curDesc) {
+        logger.trace(`WARNING: no start of the current artifact build description in ${docName}`)
+        logger.trace(`  ... ignoring the requirement at ${lineNumber}!`)
+        return
+      }
+      theInfo.curDesc.addRequirement(objType, objName)
     }
-    theInfo['curDesc'].addRequirement(objType, objName)
   }
 
-  addBuildCreation(docName, objType, objName, lineNumber, logger) {
+  addBuildCreation(
+    docName : string,
+    objType : string,
+    objName : string,
+    lineNumber : number,
+  ) {
     const theInfo = this._getBuildInfo(docName)
-    if (!theInfo['curDesc']) {
-      logger.trace(`WARNING: no start of the current artifact build description in ${docName}`)
-      logger.trace(`  ... ignoring the creation at ${lineNumber}!`)
-      return
+    if (theInfo) {
+      if (!theInfo.curDesc) {
+        logger.trace(`WARNING: no start of the current artifact build description in ${docName}`)
+        logger.trace(`  ... ignoring the creation at ${lineNumber}!`)
+        return
+      }
+      theInfo.curDesc.addCreation(objType, objName)
     }
-    theInfo['curDesc'].addCreation(objType, objName)
   }
 
-  async finalize(configDict, ConfigClass, logger) {
-    const projDesc = {}
+  async finalize(config : BuildConfig) {
+    const projDesc : any = {}
     const bInfo = this.buildInfo
-    for (const aDocName in bInfo) {
-      const artifacts = bInfo[aDocName]['artifacts']
+    for (const [aDocName, aDocInfo] of bInfo.entries()) {
+      const artifacts = aDocInfo.artifacts
       for (const theArtifact of artifacts) {
-        const deps = {}
+        const deps : any = {}
         for (const aReq of theArtifact.requirements) {
           if (!deps[aReq.objType]) deps[aReq.objType] = []
           deps[aReq.objType].push(aReq.objName)
         }
-        const creates = {}
+        const creates : any = {}
         for (const aCreation of theArtifact.creations) {
           if (!creates[aCreation.objType]) creates[aCreation.objType] = []
           creates[aCreation.objType].push(aCreation.objName)
@@ -114,7 +156,7 @@ class BuildReqs {
     }
 
     // ensure the projDesc paths exist...
-    const projDescPath = ConfigClass.getProjDescPath()
+    const projDescPath = config.buildProjDescPath
     const projDescDir  = path.dirname(projDescPath)
     logger.trace(`ENSURING the [${projDescDir}] directory exists`)
     await fsp.mkdir(projDescDir, { recursive: true })
@@ -126,7 +168,13 @@ class BuildReqs {
 }
 
 class CodeChunk {
-  constructor(startLine, stopLine, theLines, docName) {
+  startLine : number
+  stopLine  : number
+  theLines  : string[]
+  docName   : string
+  constructor(
+    startLine : number, stopLine : number, theLines : string[], docName : string
+  ) {
     this.startLine = startLine
     this.stopLine  = stopLine
     this.theLines  = theLines
@@ -134,64 +182,93 @@ class CodeChunk {
   }
 }
 
-class CodeChunks {
-  chunks = {}
-    
+class NamedCodeChunks {
+  codeName : string | undefined
+  start    : number | undefined
+  codeChunks : Map<string, CodeChunk[]> = new Map()
+}
+
+class TypedCodeChunks {
+  namedCodeChunks : Map<string, NamedCodeChunks> = new Map()
+
+  getTypedCodeFor(codeType : string) {
+    if (!this.namedCodeChunks.has(codeType))
+      this.namedCodeChunks.set(codeType, new NamedCodeChunks())
+    return this.namedCodeChunks.get(codeType)
+  }
+}
+
+class DocCodeChunks {
+  typedCodeChunks : Map<string, TypedCodeChunks> = new Map()
+
   // We place `docName` as the base index to reduce the rare chance of race
   // conditions when working asynchronously
   //
-  _getCodeFor(docName, codeType) {
-    if (!this.chunks[docName]) this.chunks[docName] = {}
-    const docCode = this.chunks[docName]
-    if (!docCode[codeType]) docCode[codeType] = {}
-    return docCode[codeType]
-  }
-
-  startCodeFor(docName, codeType, codeName, lineNumber, logger) {
-    const theCode = this._getCodeFor(docName, codeType)
-    theCode['codeName'] = codeName
-    theCode['start']    = lineNumber
-  }
-
-  stopCodeFor(docName, codeType, lineNumber, docLines, logger) {
-    const theCode = this._getCodeFor(docName, codeType)
-
-    if (!theCode['start']) {
-      tlogger.trace(`WARNING: no start of ${codeType} in ${docName}`)
-      logger.trace(`  ... ignoring the chunk that ends at ${lineNumber}!`)
-      delete theCode['start']
-      delete theCode['codeName']
-      return
+  getTypedCodeFor(docName : string, codeType : string) {
+    if (!this.typedCodeChunks.has(docName)) 
+      this.typedCodeChunks.set(docName, new TypedCodeChunks())
+    const typedCode = this.typedCodeChunks.get(docName)
+    if (typedCode) {
+      return typedCode.getTypedCodeFor(codeType)
     }
-    const codeName  = theCode['codeName']
-    const startLine = theCode['start']
-    const stopLine  = lineNumber
-    if (stopLine <= startLine) {
-      logger.trace(`WARNING: no ${codeType} found between ${startLine} and ${stopLine} in ${docName}`)
-      logger.trace("  ... ignoring this chuck!")
-      delete theCode['start']
-      delete theCode['codeName']
-      return
-    }
-    if (!theCode[codeName]) theCode[codeName] = {}
-    if (!theCode[codeName]['chunks']) theCode[codeName]['chunks'] = []
-    theCode[codeName]['chunks'].push(new CodeChunk(
-      startLine, stopLine, docLines.slice(startLine+1, stopLine), docName
-    ))
-    delete theCode['start']
-    delete theCode['codeName']
   }
 
-  async finalize(configDict, ConfigClass, logger) {
-    const srcDir = ConfigClass.getSrcDir()
+  startCodeFor(
+    docName : string, codeType : string, codeName : string, lineNumber : number
+  ) {
+    const theCode = this.getTypedCodeFor(docName, codeType)
+    if (theCode) {
+      theCode.codeName = codeName
+      theCode.start    = lineNumber
+    }
+  }
+
+  stopCodeFor(
+    docName : string, codeType : string, lineNumber : number, docLines : string[]
+  ) {
+    const theCode = this.getTypedCodeFor(docName, codeType)
+
+    if (theCode) {
+      if (!theCode.start) {
+        logger.trace(`WARNING: no start of ${codeType} in ${docName}`)
+        logger.trace(`  ... ignoring the chunk that ends at ${lineNumber}!`)
+        delete theCode.start
+        delete theCode.codeName
+        return
+      }
+      const startLine = theCode.start
+      const codeName  = theCode.codeName
+      if (startLine && codeName) {
+        const stopLine  = lineNumber
+        if (stopLine <= startLine) {
+          logger.trace(`WARNING: no ${codeType} found between ${startLine} and ${stopLine} in ${docName}`)
+          logger.trace("  ... ignoring this chuck!")
+          delete theCode.start
+          delete theCode.codeName
+          return
+        }
+        if (!theCode.codeChunks.has(codeName))
+          theCode.codeChunks.set(codeName, [])
+        const someCode = theCode.codeChunks.get(codeName)
+        if (someCode) someCode.push(new CodeChunk(
+          startLine, stopLine, docLines.slice(startLine+1, stopLine), docName
+          ))
+          delete theCode.start
+          delete theCode.codeName
+      }
+    }
+  }
+      
+  async finalize(config : BuildConfig) {
+    const srcDir = config.buildSrcDir
     logger.trace(`ENSURING the [${srcDir}] directory exists`)
     await fsp.mkdir(srcDir, { recursive: true })
 
-    for (const aDocName in this.chunks) {
-      for (const aCodeType in this.chunks[aDocName]) {
-        for (const aCodeName in this.chunks[aDocName][aCodeType]) {
-          var theCode = []
-          const chunks = this.chunks[aDocName][aCodeType][aCodeName]['chunks']
+    for (const [ aDocName, someDocCode] of this.typedCodeChunks.entries()) {
+      for (const [ aCodeType, someTypedCode] of someDocCode.namedCodeChunks.entries()) {
+        for (const [ aCodeName, someNamedCode] of someTypedCode.codeChunks.entries()) {
+          var theCode : string[] = []
+          const chunks = someNamedCode
           for (const aChunk of chunks) {
             theCode = theCode.concat(aChunk['theLines'])
           }
@@ -205,15 +282,21 @@ class CodeChunks {
   }
 }
 
-export function registerActions(configDict, ConfigClass, Builders, Grammars, ScopeActions, Structures, logger) {
+export function registerActions(config : BuildConfig) {
 
-  Structures.newStructure('code', new CodeChunks())
+  Structures.newStructure('code', new DocCodeChunks())
   Structures.newStructure('build', new BuildReqs())
 
   ScopeActions.addScopedAction(
     'keyword.control.source.start.lpic',
     import.meta.url,
-    async function(thisScope, theScope, theTokens, theLine, theDoc) {
+    async function(
+      thisScope : string,
+      theScope  : string,
+      theTokens : string[],
+      theLine   : number,
+      theDoc    : Document | undefined
+    ) {
       const codeType = theTokens[1]
       const codeName = theTokens[3]
       logger.trace("----------------------------------------------------------")
@@ -224,17 +307,24 @@ export function registerActions(configDict, ConfigClass, Builders, Grammars, Sco
       logger.trace(` codeName: ${codeName}`)
       logger.trace(`theTokens: ${theTokens}`)
       logger.trace(`  theLine: ${theLine}`)
-      logger.trace(`   theDoc: ${theDoc.docName}`)
+      if (theDoc) logger.trace(`   theDoc: ${theDoc.docName}`)
       logger.trace("----------------------------------------------------------")
-      const code = Structures.getStructure('code')
-      code.startCodeFor(theDoc.docName, codeType, codeName, theLine, logger)
+      const code = <DocCodeChunks>Structures.getStructure('code')
+      if (theDoc) 
+        code.startCodeFor(theDoc.docName, codeType, codeName, theLine)
     }
   )
 
   ScopeActions.addScopedAction(
     'keyword.control.source.stop.lpic',
     import.meta.url,
-    async function(thisScope, theScope, theTokens, theLine, theDoc) {
+    async function(
+      thisScope : string,
+      theScope  : string,
+      theTokens : string[],
+      theLine   : number,
+      theDoc    : Document | undefined
+    ) {
       const codeType = theTokens[1]
       logger.trace("----------------------------------------------------------")
       logger.trace("stopCode")
@@ -243,17 +333,24 @@ export function registerActions(configDict, ConfigClass, Builders, Grammars, Sco
       logger.trace(` codeType: ${codeType}`)
       logger.trace(`theTokens: ${theTokens}`)
       logger.trace(`  theLine: ${theLine}`)
-      logger.trace(`   theDoc: ${theDoc.docName}`)
+      if (theDoc) logger.trace(`   theDoc: ${theDoc.docName}`)
       logger.trace("----------------------------------------------------------") 
-      const code = Structures.getStructure('code')
-      code.stopCodeFor(theDoc.docName, codeType, theLine, theDoc.docLines, logger)
+      const code = <DocCodeChunks>Structures.getStructure('code')
+      if (theDoc) 
+        code.stopCodeFor(theDoc.docName, codeType, theLine, theDoc.docLines)
     }
   )
 
   ScopeActions.addScopedAction(
     'finalize.control.source',
     import.meta.url,
-    async function(thisScope, theScope, theTokens, theLine, theDoc) {
+    async function(
+      thisScope : string,
+      theScope  : string,
+      theTokens : string[],
+      theLine   : number,
+      theDoc    : Document | undefined
+    ) {
       logger.trace("----------------------------------------------------------")
       logger.trace("finalizeCode")
       logger.trace(`thisScope: ${thisScope}`)
@@ -262,89 +359,126 @@ export function registerActions(configDict, ConfigClass, Builders, Grammars, Sco
       //logger.trace(`  theLine: ${theLine}`)
       //logger.trace(`   theDoc: ${theDoc.docName}`)
       logger.trace("----------------------------------------------------------")
-      const code = Structures.getStructure('code')
-      await code.finalize(configDict, ConfigClass, logger)
+      const code = <DocCodeChunks>Structures.getStructure('code')
+      await code.finalize(config)
     }
   )
 
   ScopeActions.addScopedAction(
     'keyword.control.description.start.lpic',
     import.meta.url,
-    async function(thisScope, theScope, theTokens, theLine, theDoc) {
+    async function(
+      thisScope : string,
+      theScope  : string,
+      theTokens : string[],
+      theLine   : number,
+      theDoc    : Document | undefined
+    ) {
       logger.trace("----------------------------------------------------------")
       logger.trace("description-start")
       logger.trace(`thisScope: ${thisScope}`)
       logger.trace(` theScope: ${theScope}`)
       logger.trace(`theTokens: ${theTokens}`)
       logger.trace(`  theLine: ${theLine}`)
-      logger.trace(`   theDoc: ${theDoc.docName}`)
+      if (theDoc) logger.trace(`   theDoc: ${theDoc.docName}`)
       logger.trace("----------------------------------------------------------")      
       const buildName = theTokens[1]
       const buildType = theTokens[3]
       const buildInfo = Structures.getStructure('build')
-      buildInfo.startBuildArtifact(theDoc.docName, buildName, buildType, logger)
+      if (theDoc) 
+        buildInfo.startBuildArtifact(theDoc.docName, buildName, buildType)
     }
   )
 
   ScopeActions.addScopedAction(
     'keyword.control.description.stop.lpic',
     import.meta.url,
-    async function(thisScope, theScope, theTokens, theLine, theDoc) {
+    async function(
+      thisScope : string,
+      theScope  : string,
+      theTokens : string[],
+      theLine   : number,
+      theDoc    : Document | undefined
+    ) {
       logger.trace("----------------------------------------------------------")
       logger.trace("description-stop")
       logger.trace(`thisScope: ${thisScope}`)
       logger.trace(` theScope: ${theScope}`)
       logger.trace(`theTokens: ${theTokens}`)
       logger.trace(`  theLine: ${theLine}`)
-      logger.trace(`   theDoc: ${theDoc.docName}`)
+      if (theDoc) logger.trace(`   theDoc: ${theDoc.docName}`)
       logger.trace("----------------------------------------------------------")
-      const buildInfo = Structures.getStructure('build')
-      buildInfo.stopBuildArtifact(theDoc.docName, theLine, logger)
+      const buildInfo = <BuildReqs>Structures.getStructure('build')
+      if (theDoc) buildInfo.stopBuildArtifact(theDoc.docName, theLine)
     }
   )
 
   ScopeActions.addScopedAction(
     'keyword.control.requires.lpic',
     import.meta.url,
-    async function(thisScope, theScope, theTokens, theLine, theDoc) {
+    async function(
+      thisScope : string,
+      theScope  : string,
+      theTokens : string[],
+      theLine   : number,
+      theDoc    : Document | undefined
+    ) {
       logger.trace("----------------------------------------------------------")
       logger.trace("requires")
       logger.trace(`thisScope: ${thisScope}`)
       logger.trace(` theScope: ${theScope}`)
       logger.trace(`theTokens: ${theTokens}`)
       logger.trace(`  theLine: ${theLine}`)
-      logger.trace(`   theDoc: ${theDoc.docName}`)
+      if (theDoc) logger.trace(`   theDoc: ${theDoc.docName}`)
       logger.trace("----------------------------------------------------------")
       const objectType = theTokens[1]
       const objectName = theTokens[3]
-      const buildInfo = Structures.getStructure('build')
-      buildInfo.addBuildRequirement(theDoc.docName, objectType, objectName, theLine, logger)
+      const buildInfo = <BuildReqs>Structures.getStructure('build')
+      if (theDoc) 
+        buildInfo.addBuildRequirement(
+          theDoc.docName, objectType, objectName, theLine
+        )
     }
   )
 
   ScopeActions.addScopedAction(
     'keyword.control.creates.lpic',
     import.meta.url,
-    async function(thisScope, theScope, theTokens, theLine, theDoc) {
+    async function(
+      thisScope : string,
+      theScope  : string,
+      theTokens : string[],
+      theLine   : number,
+      theDoc    : Document | undefined
+    ) {
       logger.trace("----------------------------------------------------------")
       logger.trace("creates")
       logger.trace(`thisScope: ${thisScope}`)
       logger.trace(` theScope: ${theScope}`)
       logger.trace(`theTokens: ${theTokens}`)
       logger.trace(`  theLine: ${theLine}`)
-      logger.trace(`   theDoc: ${theDoc.docName}`)
+      if (theDoc) logger.trace(`   theDoc: ${theDoc.docName}`)
       logger.trace("----------------------------------------------------------")
       const objectType = theTokens[1]
       const objectName = theTokens[3]
-      const buildInfo = Structures.getStructure('build')
-      buildInfo.addBuildCreation(theDoc.docName, objectType, objectName, theLine, logger)
+      const buildInfo = <BuildReqs>Structures.getStructure('build')
+      if (theDoc) 
+        buildInfo.addBuildCreation(
+          theDoc.docName, objectType, objectName, theLine
+        )
     }
   )
 
   ScopeActions.addScopedAction(
     'finalize.control.description',
     import.meta.url,
-    async function(thisScope, theScope, theTokens, theLine, theDoc) {
+    async function(
+      thisScope : string,
+      theScope  : string,
+      theTokens : string[],
+      theLine   : number,
+      theDoc    : Document | undefined
+    ) {
       logger.trace("----------------------------------------------------------")
       logger.trace("finalizeCode")
       logger.trace(`thisScope: ${thisScope}`)
@@ -353,8 +487,8 @@ export function registerActions(configDict, ConfigClass, Builders, Grammars, Sco
       //logger.trace(`  theLine: ${theLine}`)
       //logger.trace(`   theDoc: ${theDoc.docName}`)
       logger.trace("----------------------------------------------------------")
-      const buildInfo = Structures.getStructure('build')
-      await buildInfo.finalize(configDict, ConfigClass, logger)
+      const buildInfo = <BuildReqs>Structures.getStructure('build')
+      await buildInfo.finalize(config)
     }
   )
 
