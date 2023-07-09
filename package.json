@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "A javascript tool to extract and build code from Literate Programming in ConTeXt documents",
   "main": "src/lpic.mjs",
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
     "//build": "echo Building: clean, check, build, buildTests, test",
     "clean": "rm -rf dist",

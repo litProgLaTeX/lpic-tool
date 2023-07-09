@@ -3,11 +3,12 @@ import fsp  from "fs/promises"
 import path from "path"
 import yaml from "yaml"
 
-import { BuildConfig  } from "lpic-modules/dist/lib/configBuild.js"
-import { Grammars     } from "lpic-modules/dist/lib/grammars.js"
-import { Document     } from "lpic-modules/dist/lib/documents.js"
-import { ScopeActions } from "lpic-modules/dist/lib/scopeActions.js"
-import { Structures   } from "lpic-modules/dist/lib/structures.js"
+import { BuildConfig             } from "lpic-modules/dist/lib/configBuild.js"
+import { Builders                } from "lpic-modules/dist/lib/builders.js"
+import { Grammars                } from "lpic-modules/dist/lib/grammars.js"
+import { Document, DocumentCache } from "lpic-modules/dist/lib/documents.js"
+import { ScopeActions            } from "lpic-modules/dist/lib/scopeActions.js"
+import { Structures              } from "lpic-modules/dist/lib/structures.js"
 
 import { Logging, ValidLogger  } from "lpic-modules/dist/lib/logging.js"
 
@@ -198,7 +199,7 @@ class TypedCodeChunks {
   }
 }
 
-class DocCodeChunks {
+export class DocCodeChunks {
   typedCodeChunks : Map<string, TypedCodeChunks> = new Map()
 
   // We place `docName` as the base index to reduce the rare chance of race
@@ -282,12 +283,20 @@ class DocCodeChunks {
   }
 }
 
-export function registerActions(config : BuildConfig) {
+export function registerActions(
+  config        : BuildConfig,
+  builders      : Builders,
+  documentCache : DocumentCache,
+  grammars      : Grammars,
+  scopeActions  : ScopeActions,
+  structures    : Structures,
+  logger        : ValidLogger
+) {
 
-  Structures.newStructure('code', new DocCodeChunks())
-  Structures.newStructure('build', new BuildReqs())
+  structures.newStructure('code', new DocCodeChunks())
+  structures.newStructure('build', new BuildReqs())
 
-  ScopeActions.addScopedAction(
+  scopeActions.addScopedAction(
     'keyword.control.source.start.lpic',
     import.meta.url,
     async function(
@@ -309,13 +318,13 @@ export function registerActions(config : BuildConfig) {
       logger.trace(`  theLine: ${theLine}`)
       if (theDoc) logger.trace(`   theDoc: ${theDoc.docName}`)
       logger.trace("----------------------------------------------------------")
-      const code = <DocCodeChunks>Structures.getStructure('code')
+      const code = <DocCodeChunks>structures.getStructure('code')
       if (theDoc) 
         code.startCodeFor(theDoc.docName, codeType, codeName, theLine)
     }
   )
 
-  ScopeActions.addScopedAction(
+  scopeActions.addScopedAction(
     'keyword.control.source.stop.lpic',
     import.meta.url,
     async function(
@@ -335,13 +344,13 @@ export function registerActions(config : BuildConfig) {
       logger.trace(`  theLine: ${theLine}`)
       if (theDoc) logger.trace(`   theDoc: ${theDoc.docName}`)
       logger.trace("----------------------------------------------------------") 
-      const code = <DocCodeChunks>Structures.getStructure('code')
+      const code = <DocCodeChunks>structures.getStructure('code')
       if (theDoc) 
         code.stopCodeFor(theDoc.docName, codeType, theLine, theDoc.docLines)
     }
   )
 
-  ScopeActions.addScopedAction(
+  scopeActions.addScopedAction(
     'finalize.control.source',
     import.meta.url,
     async function(
@@ -359,12 +368,12 @@ export function registerActions(config : BuildConfig) {
       //logger.trace(`  theLine: ${theLine}`)
       //logger.trace(`   theDoc: ${theDoc.docName}`)
       logger.trace("----------------------------------------------------------")
-      const code = <DocCodeChunks>Structures.getStructure('code')
+      const code = <DocCodeChunks>structures.getStructure('code')
       await code.finalize(config)
     }
   )
 
-  ScopeActions.addScopedAction(
+  scopeActions.addScopedAction(
     'keyword.control.description.start.lpic',
     import.meta.url,
     async function(
@@ -384,13 +393,13 @@ export function registerActions(config : BuildConfig) {
       logger.trace("----------------------------------------------------------")      
       const buildName = theTokens[1]
       const buildType = theTokens[3]
-      const buildInfo = Structures.getStructure('build')
+      const buildInfo = <BuildReqs>structures.getStructure('build')
       if (theDoc) 
         buildInfo.startBuildArtifact(theDoc.docName, buildName, buildType)
     }
   )
 
-  ScopeActions.addScopedAction(
+  scopeActions.addScopedAction(
     'keyword.control.description.stop.lpic',
     import.meta.url,
     async function(
@@ -408,12 +417,12 @@ export function registerActions(config : BuildConfig) {
       logger.trace(`  theLine: ${theLine}`)
       if (theDoc) logger.trace(`   theDoc: ${theDoc.docName}`)
       logger.trace("----------------------------------------------------------")
-      const buildInfo = <BuildReqs>Structures.getStructure('build')
+      const buildInfo = <BuildReqs>structures.getStructure('build')
       if (theDoc) buildInfo.stopBuildArtifact(theDoc.docName, theLine)
     }
   )
 
-  ScopeActions.addScopedAction(
+  scopeActions.addScopedAction(
     'keyword.control.requires.lpic',
     import.meta.url,
     async function(
@@ -433,7 +442,7 @@ export function registerActions(config : BuildConfig) {
       logger.trace("----------------------------------------------------------")
       const objectType = theTokens[1]
       const objectName = theTokens[3]
-      const buildInfo = <BuildReqs>Structures.getStructure('build')
+      const buildInfo = <BuildReqs>structures.getStructure('build')
       if (theDoc) 
         buildInfo.addBuildRequirement(
           theDoc.docName, objectType, objectName, theLine
@@ -441,7 +450,7 @@ export function registerActions(config : BuildConfig) {
     }
   )
 
-  ScopeActions.addScopedAction(
+  scopeActions.addScopedAction(
     'keyword.control.creates.lpic',
     import.meta.url,
     async function(
@@ -461,7 +470,7 @@ export function registerActions(config : BuildConfig) {
       logger.trace("----------------------------------------------------------")
       const objectType = theTokens[1]
       const objectName = theTokens[3]
-      const buildInfo = <BuildReqs>Structures.getStructure('build')
+      const buildInfo = <BuildReqs>structures.getStructure('build')
       if (theDoc) 
         buildInfo.addBuildCreation(
           theDoc.docName, objectType, objectName, theLine
@@ -469,7 +478,7 @@ export function registerActions(config : BuildConfig) {
     }
   )
 
-  ScopeActions.addScopedAction(
+  scopeActions.addScopedAction(
     'finalize.control.description',
     import.meta.url,
     async function(
@@ -487,7 +496,7 @@ export function registerActions(config : BuildConfig) {
       //logger.trace(`  theLine: ${theLine}`)
       //logger.trace(`   theDoc: ${theDoc.docName}`)
       logger.trace("----------------------------------------------------------")
-      const buildInfo = <BuildReqs>Structures.getStructure('build')
+      const buildInfo = <BuildReqs>structures.getStructure('build')
       await buildInfo.finalize(config)
     }
   )

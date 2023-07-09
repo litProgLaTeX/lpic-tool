@@ -1,7 +1,10 @@
-
-import { Grammars     } from "lpic-modules/dist/lib/grammars.js"
-import { ScopeActions } from "lpic-modules/dist/lib/scopeActions.js"
-import { Structures   } from "lpic-modules/dist/lib/structures.js"
+import { BaseConfig as Config    } from "lpic-modules/dist/lib/configBase.js"
+import { addITraceConfig         } from "lpic-modules/dist/lib/configITrace.js"
+import { Builders                } from "lpic-modules/dist/lib/builders.js"
+import { Document, DocumentCache } from "lpic-modules/dist/lib/documents.js"
+import { Grammars                } from "lpic-modules/dist/lib/grammars.js"
+import { ScopeActions            } from "lpic-modules/dist/lib/scopeActions.js"
+import { Structures              } from "lpic-modules/dist/lib/structures.js"
 
 import { Logging, ValidLogger  } from "lpic-modules/dist/lib/logging.js"
 
@@ -28,11 +31,19 @@ class Components {
   }
 }
 
-export function registerActions(config : any) {
+export function registerActions(
+  config        : Config,
+  builders      : Builders,
+  documentCache : DocumentCache,
+  grammars      : Grammars,
+  scopeActions  : ScopeActions,
+  structures    : Structures,
+  logger        : ValidLogger
+) {
 
-  Structures.newStructure('components', new Components())
+  structures.newStructure('components', new Components())
 
-  ScopeActions.addScopedAction(
+  scopeActions.addScopedAction(
     'initialize.control.structure.context',
     import.meta.url,
     async function(
@@ -53,7 +64,7 @@ export function registerActions(config : any) {
     }
   )
 
-  ScopeActions.addScopedAction(
+  scopeActions.addScopedAction(
     'run.load.components.context',
     import.meta.url,
     async function(
@@ -70,7 +81,7 @@ export function registerActions(config : any) {
       //logger.trace(`  theLine: ${theLine}`)
       //logger.trace(`   theDoc: ${theDoc.docName}`)
       logger.trace("----------------------------------------------------------")
-      const components = <Components>Structures.getStructure('components')
+      const components = <Components>structures.getStructure('components')
       for (const aDocPath of theTokens) {
         components.pending(aDocPath)
       }
@@ -79,14 +90,14 @@ export function registerActions(config : any) {
         logger.trace(someComponents)
         for (const aDocPath of someComponents) {
           components.loaded(aDocPath)
-          await Grammars.traceParseOf(aDocPath, config)
+          await grammars.traceParseOf(aDocPath, addITraceConfig(config))
         }
         someComponents = components.getPending()
       }
     }
   )
 
-  ScopeActions.addScopedAction(
+  scopeActions.addScopedAction(
     'keyword.control.structure.context',
     import.meta.url,
     async function(
@@ -95,7 +106,7 @@ export function registerActions(config : any) {
       theTokens : string[],
       theLine : number,
       theDoc : any) {
-      const components = <Components>Structures.getStructure('components')
+      const components = <Components>structures.getStructure('components')
       components.pending(theTokens[1]+'.tex')
       logger.trace("----------------------------------------------------------")
       logger.trace("loadComponent")
@@ -108,7 +119,7 @@ export function registerActions(config : any) {
     }
   )
 
-  ScopeActions.addScopedAction(
+  scopeActions.addScopedAction(
     'finalize.control.structure.context',
     import.meta.url,
     async function(
