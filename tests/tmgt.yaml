@@ -1,4 +1,5 @@
-cfdoitConfig: cfdoit.toml
+configPaths:
+ - ~/.config/cfdoit/config.toml
 load:
   actions:
     - ~/GitTools/lpic/lpic-tool/dist/src/actions
