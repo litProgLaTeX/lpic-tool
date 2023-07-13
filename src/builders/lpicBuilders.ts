@@ -1,6 +1,4 @@
 
-import yaml from "yaml"
-
 import { BuildConfig             } from "lpic-modules/dist/lib/configBuild.js"
 import { Builders                } from "lpic-modules/dist/lib/builders.js"
 import { Document, DocumentCache } from "lpic-modules/dist/lib/documents.js"
