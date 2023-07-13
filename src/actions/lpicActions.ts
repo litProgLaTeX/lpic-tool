@@ -157,7 +157,7 @@ class BuildReqs {
     }
 
     // ensure the projDesc paths exist...
-    const projDescPath = config.buildProjDescPath
+    const projDescPath = config.replaceTemplate(config.buildProjDescPath)
     const projDescDir  = path.dirname(projDescPath)
     logger.trace(`ENSURING the [${projDescDir}] directory exists`)
     await fsp.mkdir(projDescDir, { recursive: true })
@@ -261,7 +261,7 @@ export class DocCodeChunks {
   }
       
   async finalize(config : BuildConfig) {
-    const srcDir = config.buildSrcDir
+    const srcDir = config.replaceTemplate(config.srcDir)
     logger.trace(`ENSURING the [${srcDir}] directory exists`)
     await fsp.mkdir(srcDir, { recursive: true })
 
