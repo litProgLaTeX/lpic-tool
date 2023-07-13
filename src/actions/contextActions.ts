@@ -90,7 +90,7 @@ export function registerActions(
         logger.trace(someComponents)
         for (const aDocPath of someComponents) {
           components.loaded(aDocPath)
-          await grammars.traceParseOf(aDocPath, addITraceConfig(config))
+          await grammars.traceParseOf(aDocPath, config)
         }
         someComponents = components.getPending()
       }

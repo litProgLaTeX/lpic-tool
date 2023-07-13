@@ -5,15 +5,28 @@ import yaml from "yaml"
 import { Logging, ValidLogger     } from "lpic-modules/dist/lib/logging.js"
 const logger : ValidLogger = Logging.getLogger('lpic')
 
-import { BuildConfig as Config    } from "lpic-modules/dist/lib/configBuild.js"
+import { IConfig                  } from "lpic-modules/dist/lib/cfgrCollector.js"
+import { CfgrHelpers              } from "lpic-modules/dist/lib/cfgrHelpers.js"
+import { BaseConfig               } from "lpic-modules/dist/lib/configBase.js"
+import { BuildConfig              } from "lpic-modules/dist/lib/configBuild.js"
+import { TraceConfig              } from "lpic-modules/dist/lib/configTrace.js"
 import { setupTMGTool, runTMGTool } from "lpic-modules/dist/lib/runner.js"
 
 async function runTool() {
-  const config : Config = await <Config>(<unknown>setupTMGTool(
+
+  IConfig.clearMetaData(TraceConfig)
+
+  const config = CfgrHelpers.assembleConfigFrom(
+    BaseConfig, BuildConfig, TraceConfig
+  )
+  
+  await setupTMGTool(
     'lpic',
     'A tool to extract and build code from Literate Programming in ConTeXt documents.',
-    '0.0.1', Config
-  ))
+    '0.0.1',
+    config
+  )
+
   await runTMGTool(config)
 }
 
