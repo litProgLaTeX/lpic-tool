@@ -13,11 +13,10 @@ import { setupTMGTool, runTMGTool } from "lpic-modules/dist/lib/runner.js"
 async function runTool() {
 
   IConfig.clearMetaData(TraceConfig)
-
   const config = CfgrHelpers.assembleConfigFrom(
     BaseConfig, BuildConfig, TraceConfig
   )
-  
+
   await setupTMGTool(
     'lpic',
     'A tool to extract and build code from Literate Programming in ConTeXt documents.',

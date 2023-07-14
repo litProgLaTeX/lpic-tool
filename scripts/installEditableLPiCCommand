@@ -4,7 +4,7 @@
 # script to run the lpic command anywhere in a user's
 # workspace.
 
-cmdScript=$(pwd)/src/lpic.mjs
+cmdScript=$(pwd)/dist/src/lpic.js
 
 cat << CMD_SCRIPT > $HOME/.local/bin/lpic
 #!/bin/sh

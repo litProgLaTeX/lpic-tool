@@ -1,0 +1,10 @@
+configPaths:
+ - ~/.config/cfdoit/config.toml
+load:
+  actions:
+    - ~/GitTools/lpic/lpic-tool/dist/src/actions
+  grammars:
+    - ~/GitTools/lpic/lpic-syntaxes/lpicSyntaxes/context.tmLanguage.json
+    - ~/GitTools/lpic/lpic-syntaxes/lpicSyntaxes/lpic.tmLanguage.json
+  builders:
+    - ~/GitTools/lpic/lpic-tool/dist/src/builders
