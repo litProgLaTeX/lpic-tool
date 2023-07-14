@@ -20,7 +20,7 @@ class Components {
   }
 
   getPending() {
-    return Object.keys(this.pendingComponents)
+    return Array.from(this.pendingComponents.values())
   }
 
   loaded(aComponent : string) {
